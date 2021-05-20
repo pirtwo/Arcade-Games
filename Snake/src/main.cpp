@@ -159,7 +159,7 @@ int main()
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))
             snake.dir = 3;
 
-        window.clear(sf::Color(200, 200, 200, 255));
+        window.clear(sf::Color(240, 240, 240, 255));
 
         // show player score
         snprintf(scoreStr, 100, "SCORE: %d (x%d)", player.score, player.boost);

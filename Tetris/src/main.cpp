@@ -1,5 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <stdlib.h>
+#include "Tetromino.h"
+#include "TetrominoFactory.h"
 
 using namespace std;
 
@@ -10,17 +12,6 @@ const int FieldOffsetY = 100;
 const int TetrominoNum = 5; // number of Tetrominos in game
 const int BlockSize = 20;   // size of each block in pixel
 const int TextureSize = 88;
-
-struct Key
-{
-    bool isDown = false;
-} arrowLeft, arrowRight, arrowUp, arrowDown;
-
-struct Tetromino
-{
-    sf::Vector2i pos;
-    int value[4][4] = {0};
-};
 
 void update(Tetromino *tetro, int field[FieldY][FieldX]);
 void copyTetro(Tetromino *tetro, int field[FieldY][FieldX]);
@@ -75,47 +66,14 @@ int main()
     float delay = 0.5;
 
     int field[FieldY][FieldX] = {0};
-    Tetromino *tetros[TetrominoNum];
     Tetromino *curr;
     Tetromino *next;
+    TetrominoFactory *tetroFactory = new TetrominoFactory();
 
-    Tetromino straight;
-    straight.value[1][0] = 1;
-    straight.value[1][1] = 1;
-    straight.value[1][2] = 1;
-    straight.value[1][3] = 1;
-    tetros[0] = &straight;
-
-    Tetromino square;
-    square.value[1][1] = 2;
-    square.value[1][2] = 2;
-    square.value[2][1] = 2;
-    square.value[2][2] = 2;
-    tetros[1] = &square;
-
-    Tetromino shapeT;
-    shapeT.value[1][0] = 3;
-    shapeT.value[1][1] = 3;
-    shapeT.value[1][2] = 3;
-    shapeT.value[2][1] = 3;
-    tetros[2] = &shapeT;
-
-    Tetromino shapeL;
-    shapeL.value[0][0] = 4;
-    shapeL.value[1][1] = 4;
-    shapeL.value[1][2] = 4;
-    shapeL.value[1][0] = 4;
-    tetros[3] = &shapeL;
-
-    Tetromino skew;
-    skew.value[0][0] = 5;
-    skew.value[0][1] = 5;
-    skew.value[1][1] = 5;
-    skew.value[1][2] = 5;
-    tetros[4] = &skew;
-
-    curr = tetros[rand() % TetrominoNum];
-    next = tetros[rand() % TetrominoNum];
+    curr = tetroFactory->create(
+        static_cast<TetrominoType>(rand() % TetrominoNum + 1));
+    next = tetroFactory->create(
+        static_cast<TetrominoType>(rand() % TetrominoNum + 1));
     curr->pos.x = 0;
     curr->pos.y = 0;
 
@@ -132,7 +90,7 @@ int main()
                 if (e.key.code == sf::Keyboard::Key::Left)
                     curr->pos.x -= curr->pos.x > 0 ? 1 : 0;
                 if (e.key.code == sf::Keyboard::Key::Right)
-                    curr->pos.x += curr->pos.x + 4 < FieldX ? 1 : 0;
+                    curr->pos.x += curr->pos.x + curr->getWidth() < FieldX ? 1 : 0;
             }
         }
 
@@ -188,11 +146,11 @@ int main()
         }
 
         // draw current tetromino
-        for (int y = 0; y < 4; y++)
+        for (int y = 0; y < curr->getHeight(); y++)
         {
-            for (int x = 0; x < 4; x++)
+            for (int x = 0; x < curr->getWidth(); x++)
             {
-                switch (curr->value[y][x])
+                switch (curr->getValue(x, y))
                 {
                 case 1:
                     blueBlock.setPosition(
@@ -239,6 +197,8 @@ int main()
         window.display();
     }
 
+    delete tetroFactory;
+
     return EXIT_SUCCESS;
 }
 
@@ -252,11 +212,11 @@ void update(Tetromino *tetro, int field[FieldY][FieldX])
 
 bool checkCollision(Tetromino *tetro, int field[FieldY][FieldX])
 {
-    for (int y = 0; y < 4; y++)
+    for (int y = 0; y < tetro->getHeight(); y++)
     {
-        for (int x = 0; x < 4; x++)
+        for (int x = 0; x < tetro->getWidth(); x++)
         {
-            if (tetro->value[y][x] == 0)
+            if (tetro->getValue(x, y) == 0)
                 continue;
             int blockX = tetro->pos.x + x;
             int blockY = tetro->pos.y + y;
@@ -269,15 +229,15 @@ bool checkCollision(Tetromino *tetro, int field[FieldY][FieldX])
 
 void copyTetro(Tetromino *tetro, int field[FieldY][FieldX])
 {
-    for (int y = 0; y < 4; y++)
+    for (int y = 0; y < tetro->getHeight(); y++)
     {
-        for (int x = 0; x < 4; x++)
+        for (int x = 0; x < tetro->getWidth(); x++)
         {
-            if (tetro->value[y][x] == 0)
+            if (tetro->getValue(x, y) == 0)
                 continue;
             int blockX = tetro->pos.x + x;
             int blockY = tetro->pos.y + y;
-            field[blockY][blockX] = tetro->value[y][x];
+            field[blockY][blockX] = tetro->getValue(x, y);
         }
     }
 }

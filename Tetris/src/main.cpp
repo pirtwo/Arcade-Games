@@ -8,10 +8,10 @@ using namespace std;
 
 const int FieldX = 11;
 const int FieldY = 20;
-const int FieldOffsetX = 100;
-const int FieldOffsetY = 100;
+const int FieldOffsetX = 0;
+const int FieldOffsetY = 0;
 const int TetrominoNum = 5; // number of Tetrominos in game
-const int BlockSize = 20;   // size of each block in pixel
+const int BlockSize = 35;   // size of each block in pixel
 const int TextureSize = 88;
 const sf::Vector2i SpawnPoint(4, 0);
 
@@ -20,6 +20,7 @@ struct State
     bool pause = false;
     bool gameover = false;
     int score = 0;
+    int lines = 0;
 } gameState;
 
 int removeCompleteLines(int field[FieldY][FieldX]);
@@ -27,11 +28,12 @@ void pushFieldDown(int field[FieldY][FieldX]);
 void addToField(Tetromino *tetro, int field[FieldY][FieldX]);
 bool checkCollisionX(Tetromino *tetro, int field[FieldY][FieldX]);
 bool checkCollisionY(Tetromino *tetro, int field[FieldY][FieldX]);
-Tetromino *getRandTetromino(Tetromino *list[]);
+Tetromino *getRandTetromino(TetrominoFactory *factory);
+void clearField(int field[FieldY][FieldX]);
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode(500, 700), "Tetris");
+    sf::RenderWindow window(sf::VideoMode(600, 700), "Tetris");
     window.setFramerateLimit(60);
 
     // load assets
@@ -42,7 +44,8 @@ int main()
         tileOrangeTxt,
         tileRedTxt,
         tileYellowTxt;
-    if (!tileGreyTxt.loadFromFile("./assets/tileGrey.png") ||
+    if (!font.loadFromFile("./assets/FredokaOne-Regular.ttf") ||
+        !tileGreyTxt.loadFromFile("./assets/tileGrey.png") ||
         !tileBlueTxt.loadFromFile("./assets/tileBlue.png") ||
         !tileGreenTxt.loadFromFile("./assets/tileGreen.png") ||
         !tileOrangeTxt.loadFromFile("./assets/tileOrange.png") ||
@@ -81,18 +84,55 @@ int main()
     int field[FieldY][FieldX]{0};
     Tetromino *curr;
     Tetromino *next;
-    Tetromino *tl[5];
     TetrominoFactory *tf = new TetrominoFactory();
-    tl[0] = tf->create(TetrominoType::Straight);
-    tl[1] = tf->create(TetrominoType::Square);
-    tl[2] = tf->create(TetrominoType::ShapeL);
-    tl[3] = tf->create(TetrominoType::ShapeT);
-    tl[4] = tf->create(TetrominoType::Skew);
 
-    curr = getRandTetromino(tl);
-    next = getRandTetromino(tl);
+    curr = getRandTetromino(tf);
+    next = getRandTetromino(tf);
     curr->pos.x = SpawnPoint.x;
     curr->pos.y = SpawnPoint.y;
+    next->pos.x = 0;
+    next->pos.y = 0;
+
+    // game title text
+    sf::Text titleText;
+    titleText.setFont(font);
+    titleText.setCharacterSize(40);
+    titleText.setFillColor(sf::Color::Red);
+    titleText.setString("Tetris");
+    titleText.setPosition(420, 50);
+
+    // player stats text
+    char playerStat[100];
+    sf::Text statText;
+    statText.setFont(font);
+    statText.setCharacterSize(20);
+    statText.setFillColor(sf::Color::Red);
+    statText.setPosition(420, 50);
+
+    // game pause text
+    sf::Text pauseText;
+    pauseText.setFont(font);
+    pauseText.setCharacterSize(20);
+    pauseText.setFillColor(sf::Color::Red);
+    pauseText.setString("PAUSE");
+    pauseText.setPosition(420, 125);
+
+    // gameover text
+    sf::Text gameoverText;
+    gameoverText.setFont(font);
+    gameoverText.setCharacterSize(20);
+    gameoverText.setFillColor(sf::Color::Red);
+    gameoverText.setString("GAMEOVER");
+    gameoverText.setPosition(420, 125);
+
+    // game keys help text
+    sf::Text helpText;
+    helpText.setFont(font);
+    helpText.setFillColor(sf::Color::Blue);
+    helpText.setString(
+        "Keys:\r\n[P] Pause\r\n[R] Restart\r\n[Space] Rotate\r\n[Arrows] Move");
+    helpText.setCharacterSize(20);
+    helpText.setPosition(420, 550);
 
     while (window.isOpen())
     {
@@ -123,20 +163,59 @@ int main()
                         curr->pos.x -= 1;
                 }
                 if (e.key.code == sf::Keyboard::Key::Down)
+                {
                     delay = 0.5;
+                }
                 if (e.key.code == sf::Keyboard::Key::Space)
                 {
                     curr->rotateRight();
                     if (checkCollisionX(curr, field))
                         curr->rotateLeft();
                 }
+                if (e.key.code == sf::Keyboard::Key::P)
+                {
+                    gameState.pause = !gameState.pause;
+                }
+                if (e.key.code == sf::Keyboard::Key::R)
+                {
+                    gameState.pause = false;
+                    gameState.gameover = false;
+                    gameState.score = 0;
+
+                    curr = getRandTetromino(tf);
+                    curr->pos.x = SpawnPoint.x;
+                    curr->pos.y = SpawnPoint.y;
+
+                    next = getRandTetromino(tf);
+                    next->pos.x = 0;
+                    next->pos.y = 0;
+
+                    clearField(field);
+                }
             }
         }
 
-        if (gameState.pause || gameState.gameover)
-            continue;
+        window.clear(sf::Color(200, 200, 200, 255));
 
-        window.clear();
+        // show title text
+        //window.draw(titleText);
+
+        // show player statistics
+        snprintf(
+            playerStat, 100,
+            "Statistics:\r\nScore: %d\r\nLines: %d",
+            gameState.score,
+            gameState.lines);
+        statText.setString(playerStat);
+        window.draw(statText);
+
+        // show game status text
+        if (gameState.pause)
+            window.draw(pauseText);
+        if (gameState.gameover)
+            window.draw(gameoverText);
+
+        window.draw(helpText);
 
         if (completeLines > 0)
             pushFieldDown(field);
@@ -190,41 +269,85 @@ int main()
             }
         }
 
-        // draw current tetromino
-        for (int y = 0; y < curr->getHeight(); y++)
-        {
-            for (int x = 0; x < curr->getWidth(); x++)
+        // draw current Tetromino
+        if (!gameState.gameover)
+            for (int y = 0; y < curr->getHeight(); y++)
             {
-                switch (curr->getValue(x, y))
+                for (int x = 0; x < curr->getWidth(); x++)
+                {
+                    switch (curr->getValue(x, y))
+                    {
+                    case 1:
+                        blueBlock.setPosition(
+                            (x + curr->pos.x) * BlockSize + FieldOffsetX,
+                            (y + curr->pos.y) * BlockSize + FieldOffsetY);
+                        window.draw(blueBlock);
+                        break;
+                    case 2:
+                        greenBlock.setPosition(
+                            (x + curr->pos.x) * BlockSize + FieldOffsetX,
+                            (y + curr->pos.y) * BlockSize + FieldOffsetY);
+                        window.draw(greenBlock);
+                        break;
+                    case 3:
+                        orangeBlock.setPosition(
+                            (x + curr->pos.x) * BlockSize + FieldOffsetX,
+                            (y + curr->pos.y) * BlockSize + FieldOffsetY);
+                        window.draw(orangeBlock);
+                        break;
+                    case 4:
+                        redBlock.setPosition(
+                            (x + curr->pos.x) * BlockSize + FieldOffsetX,
+                            (y + curr->pos.y) * BlockSize + FieldOffsetY);
+                        window.draw(redBlock);
+                        break;
+                    case 5:
+                        yellowBlock.setPosition(
+                            (x + curr->pos.x) * BlockSize + FieldOffsetX,
+                            (y + curr->pos.y) * BlockSize + FieldOffsetY);
+                        window.draw(yellowBlock);
+                        break;
+                    default:
+                        break;
+                    }
+                }
+            }
+
+        // draw next Tetromino
+        for (int y = 0; y < next->getHeight(); y++)
+        {
+            for (int x = 0; x < next->getWidth(); x++)
+            {
+                switch (next->getValue(x, y))
                 {
                 case 1:
                     blueBlock.setPosition(
-                        (x + curr->pos.x) * BlockSize + FieldOffsetX,
-                        (y + curr->pos.y) * BlockSize + FieldOffsetY);
+                        (x + next->pos.x) * BlockSize + 420,
+                        (y + next->pos.y) * BlockSize + 300);
                     window.draw(blueBlock);
                     break;
                 case 2:
                     greenBlock.setPosition(
-                        (x + curr->pos.x) * BlockSize + FieldOffsetX,
-                        (y + curr->pos.y) * BlockSize + FieldOffsetY);
+                        (x + next->pos.x) * BlockSize + 420,
+                        (y + next->pos.y) * BlockSize + 300);
                     window.draw(greenBlock);
                     break;
                 case 3:
                     orangeBlock.setPosition(
-                        (x + curr->pos.x) * BlockSize + FieldOffsetX,
-                        (y + curr->pos.y) * BlockSize + FieldOffsetY);
+                        (x + next->pos.x) * BlockSize + 420,
+                        (y + next->pos.y) * BlockSize + 300);
                     window.draw(orangeBlock);
                     break;
                 case 4:
                     redBlock.setPosition(
-                        (x + curr->pos.x) * BlockSize + FieldOffsetX,
-                        (y + curr->pos.y) * BlockSize + FieldOffsetY);
+                        (x + next->pos.x) * BlockSize + 420,
+                        (y + next->pos.y) * BlockSize + 300);
                     window.draw(redBlock);
                     break;
                 case 5:
                     yellowBlock.setPosition(
-                        (x + curr->pos.x) * BlockSize + FieldOffsetX,
-                        (y + curr->pos.y) * BlockSize + FieldOffsetY);
+                        (x + next->pos.x) * BlockSize + 420,
+                        (y + next->pos.y) * BlockSize + 300);
                     window.draw(yellowBlock);
                     break;
                 default:
@@ -233,7 +356,9 @@ int main()
             }
         }
 
-        if (clock.getElapsedTime().asSeconds() > delay)
+        if (!gameState.pause &&
+            !gameState.gameover &&
+            clock.getElapsedTime().asSeconds() > delay)
         {
             curr->pos.y += 1;
             if (checkCollisionY(curr, field))
@@ -242,12 +367,20 @@ int main()
                 addToField(curr, field);
                 completeLines = removeCompleteLines(field);
                 if (completeLines > 0)
+                {
                     gameState.score += completeLines * 100;
+                    gameState.lines += completeLines;
+                }
 
+                delete curr;
                 curr = next;
                 curr->pos.x = SpawnPoint.x;
                 curr->pos.y = SpawnPoint.y;
-                next = getRandTetromino(tl);
+
+                next = getRandTetromino(tf);
+                next->pos.x = 0;
+                next->pos.y = 0;
+
                 gameState.gameover = checkCollisionY(curr, field);
             }
             clock.restart();
@@ -257,18 +390,15 @@ int main()
     }
 
     delete tf;
-    delete tl[0];
-    delete tl[1];
-    delete tl[2];
-    delete tl[3];
-    delete tl[4];
+    delete curr;
+    delete next;
 
     return EXIT_SUCCESS;
 }
 
-Tetromino *getRandTetromino(Tetromino *list[])
+Tetromino *getRandTetromino(TetrominoFactory *factory)
 {
-    return list[rand() % TetrominoNum];
+    return factory->create(static_cast<TetrominoType>(rand() % TetrominoNum + 1));
 }
 
 bool checkCollisionX(Tetromino *tetro, int field[FieldY][FieldX])
@@ -378,6 +508,17 @@ void pushFieldDown(int field[FieldY][FieldX])
                 field[row][i] = field[y][i];
                 field[y][i] = 0;
             }
+        }
+    }
+}
+
+void clearField(int field[FieldY][FieldX])
+{
+    for (int y = 0; y < FieldY; y++)
+    {
+        for (int x = 0; x < FieldX; x++)
+        {
+            field[y][x] = 0;
         }
     }
 }

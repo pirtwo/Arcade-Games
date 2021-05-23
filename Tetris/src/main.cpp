@@ -1,5 +1,6 @@
 #include <SFML/Graphics.hpp>
 #include <stdlib.h>
+#include <list>
 #include "Tetromino.h"
 #include "TetrominoFactory.h"
 
@@ -12,10 +13,21 @@ const int FieldOffsetY = 100;
 const int TetrominoNum = 5; // number of Tetrominos in game
 const int BlockSize = 20;   // size of each block in pixel
 const int TextureSize = 88;
+const sf::Vector2i SpawnPoint(4, 0);
 
-void update(Tetromino *tetro, int field[FieldY][FieldX]);
-void copyTetro(Tetromino *tetro, int field[FieldY][FieldX]);
-bool checkCollision(Tetromino *tetro, int field[FieldY][FieldX]);
+struct State
+{
+    bool pause = false;
+    bool gameover = false;
+    int score = 0;
+} gameState;
+
+int removeCompleteLines(int field[FieldY][FieldX]);
+void pushFieldDown(int field[FieldY][FieldX]);
+void addToField(Tetromino *tetro, int field[FieldY][FieldX]);
+bool checkCollisionX(Tetromino *tetro, int field[FieldY][FieldX]);
+bool checkCollisionY(Tetromino *tetro, int field[FieldY][FieldX]);
+Tetromino *getRandTetromino(Tetromino *list[]);
 
 int main()
 {
@@ -65,17 +77,22 @@ int main()
     sf::Clock clock;
     float delay = 0.5;
 
-    int field[FieldY][FieldX] = {0};
+    int completeLines = 0;
+    int field[FieldY][FieldX]{0};
     Tetromino *curr;
     Tetromino *next;
-    TetrominoFactory *tetroFactory = new TetrominoFactory();
+    Tetromino *tl[5];
+    TetrominoFactory *tf = new TetrominoFactory();
+    tl[0] = tf->create(TetrominoType::Straight);
+    tl[1] = tf->create(TetrominoType::Square);
+    tl[2] = tf->create(TetrominoType::ShapeL);
+    tl[3] = tf->create(TetrominoType::ShapeT);
+    tl[4] = tf->create(TetrominoType::Skew);
 
-    curr = tetroFactory->create(
-        static_cast<TetrominoType>(rand() % TetrominoNum + 1));
-    next = tetroFactory->create(
-        static_cast<TetrominoType>(rand() % TetrominoNum + 1));
-    curr->pos.x = 0;
-    curr->pos.y = 0;
+    curr = getRandTetromino(tl);
+    next = getRandTetromino(tl);
+    curr->pos.x = SpawnPoint.x;
+    curr->pos.y = SpawnPoint.y;
 
     while (window.isOpen())
     {
@@ -85,16 +102,44 @@ int main()
             if (e.type == sf::Event::Closed)
                 window.close();
 
+            if (e.type == sf::Event::KeyPressed)
+            {
+                if (e.key.code == sf::Keyboard::Key::Down)
+                    delay = 0.05;
+            }
+
             if (e.type == sf::Event::KeyReleased)
             {
                 if (e.key.code == sf::Keyboard::Key::Left)
-                    curr->pos.x -= curr->pos.x > 0 ? 1 : 0;
+                {
+                    curr->pos.x -= 1;
+                    if (checkCollisionX(curr, field))
+                        curr->pos.x += 1;
+                }
                 if (e.key.code == sf::Keyboard::Key::Right)
-                    curr->pos.x += curr->pos.x + curr->getWidth() < FieldX ? 1 : 0;
+                {
+                    curr->pos.x += 1;
+                    if (checkCollisionX(curr, field))
+                        curr->pos.x -= 1;
+                }
+                if (e.key.code == sf::Keyboard::Key::Down)
+                    delay = 0.5;
+                if (e.key.code == sf::Keyboard::Key::Space)
+                {
+                    curr->rotateRight();
+                    if (checkCollisionX(curr, field))
+                        curr->rotateLeft();
+                }
             }
         }
 
+        if (gameState.pause || gameState.gameover)
+            continue;
+
         window.clear();
+
+        if (completeLines > 0)
+            pushFieldDown(field);
 
         // draw field
         for (int y = 0; y < FieldY; y++)
@@ -190,27 +235,43 @@ int main()
 
         if (clock.getElapsedTime().asSeconds() > delay)
         {
-            update(curr, field);
+            curr->pos.y += 1;
+            if (checkCollisionY(curr, field))
+            {
+                curr->pos.y -= 1;
+                addToField(curr, field);
+                completeLines = removeCompleteLines(field);
+                if (completeLines > 0)
+                    gameState.score += completeLines * 100;
+
+                curr = next;
+                curr->pos.x = SpawnPoint.x;
+                curr->pos.y = SpawnPoint.y;
+                next = getRandTetromino(tl);
+                gameState.gameover = checkCollisionY(curr, field);
+            }
             clock.restart();
         }
 
         window.display();
     }
 
-    delete tetroFactory;
+    delete tf;
+    delete tl[0];
+    delete tl[1];
+    delete tl[2];
+    delete tl[3];
+    delete tl[4];
 
     return EXIT_SUCCESS;
 }
 
-void update(Tetromino *tetro, int field[FieldY][FieldX])
+Tetromino *getRandTetromino(Tetromino *list[])
 {
-    if (checkCollision(tetro, field))
-        copyTetro(tetro, field);
-    else
-        tetro->pos.y += 1;
+    return list[rand() % TetrominoNum];
 }
 
-bool checkCollision(Tetromino *tetro, int field[FieldY][FieldX])
+bool checkCollisionX(Tetromino *tetro, int field[FieldY][FieldX])
 {
     for (int y = 0; y < tetro->getHeight(); y++)
     {
@@ -220,14 +281,33 @@ bool checkCollision(Tetromino *tetro, int field[FieldY][FieldX])
                 continue;
             int blockX = tetro->pos.x + x;
             int blockY = tetro->pos.y + y;
-            if (blockY >= FieldY || field[blockY + 1][blockX] != 0)
+            if (blockX < 0 || blockX >= FieldX)
+                return true;
+            if (field[blockY][blockX] != 0)
                 return true;
         }
     }
     return false;
 }
 
-void copyTetro(Tetromino *tetro, int field[FieldY][FieldX])
+bool checkCollisionY(Tetromino *tetro, int field[FieldY][FieldX])
+{
+    for (int y = tetro->getHeight() - 1; y >= 0; y--)
+    {
+        for (int x = tetro->getWidth() - 1; x >= 0; x--)
+        {
+            if (tetro->getValue(x, y) == 0)
+                continue;
+            int blockX = tetro->pos.x + x;
+            int blockY = tetro->pos.y + y;
+            if (blockY >= FieldY || field[blockY][blockX] != 0)
+                return true;
+        }
+    }
+    return false;
+}
+
+void addToField(Tetromino *tetro, int field[FieldY][FieldX])
 {
     for (int y = 0; y < tetro->getHeight(); y++)
     {
@@ -238,6 +318,66 @@ void copyTetro(Tetromino *tetro, int field[FieldY][FieldX])
             int blockX = tetro->pos.x + x;
             int blockY = tetro->pos.y + y;
             field[blockY][blockX] = tetro->getValue(x, y);
+        }
+    }
+}
+
+int removeCompleteLines(int field[FieldY][FieldX])
+{
+    int count = 0;
+    for (int y = FieldY - 1; y >= 0; y--)
+    {
+        bool isComplete = true;
+        for (int i = 0; i < FieldX; i++)
+        {
+            if (field[y][i] == 0)
+            {
+                isComplete = false;
+                break;
+            }
+        }
+
+        if (isComplete)
+        {
+            for (int i = 0; i < FieldX; i++)
+                field[y][i] = 0;
+            count++;
+        }
+    }
+    return count;
+}
+
+void pushFieldDown(int field[FieldY][FieldX])
+{
+    list<int> emptyRows;
+    for (int y = FieldY - 1; y >= 0; y--)
+    {
+        bool isEmpty = true;
+        for (int i = 0; i < FieldX; i++)
+        {
+            if (field[y][i] != 0)
+            {
+                isEmpty = false;
+                break;
+            }
+        }
+
+        if (isEmpty)
+        {
+            emptyRows.push_back(y);
+        }
+        else if (emptyRows.size() > 0)
+        {
+            int row = emptyRows.front();
+            emptyRows.pop_front();
+
+            // copy current row to first empty row
+            // and clear current row
+            for (int i = 0; i < FieldX; i++)
+            {
+                field[row][i] = field[y][i];
+                field[y][i] = 0;
+            }
         }
     }
 }

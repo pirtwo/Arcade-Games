@@ -386,11 +386,17 @@ int main()
     return EXIT_SUCCESS;
 }
 
+/*
+    returns a random Tetromino
+*/
 Tetromino *getRandTetromino(TetrominoFactory *factory)
 {
     return factory->create(static_cast<TetrominoType>(rand() % TetrominoNum + 1));
 }
 
+/*
+    checks for collision on X axis
+*/
 bool checkCollisionX(Tetromino *tetro, int field[FieldY][FieldX])
 {
     for (int y = 0; y < tetro->getHeight(); y++)
@@ -410,6 +416,9 @@ bool checkCollisionX(Tetromino *tetro, int field[FieldY][FieldX])
     return false;
 }
 
+/*
+    checks for collision on Y axis
+*/
 bool checkCollisionY(Tetromino *tetro, int field[FieldY][FieldX])
 {
     for (int y = tetro->getHeight() - 1; y >= 0; y--)
@@ -427,6 +436,9 @@ bool checkCollisionY(Tetromino *tetro, int field[FieldY][FieldX])
     return false;
 }
 
+/*
+    Add the Tetromino to the field
+*/
 void addToField(Tetromino *tetro, int field[FieldY][FieldX])
 {
     for (int y = 0; y < tetro->getHeight(); y++)
@@ -442,6 +454,10 @@ void addToField(Tetromino *tetro, int field[FieldY][FieldX])
     }
 }
 
+/*
+    Removes complete rows from the field and 
+    returns the number of deleted rows
+*/
 int removeCompleteLines(int field[FieldY][FieldX])
 {
     int count = 0;
@@ -467,6 +483,9 @@ int removeCompleteLines(int field[FieldY][FieldX])
     return count;
 }
 
+/*
+    fills empty rows with non empty rows above (if exist)
+*/
 void pushFieldDown(int field[FieldY][FieldX])
 {
     list<int> emptyRows;
@@ -491,8 +510,6 @@ void pushFieldDown(int field[FieldY][FieldX])
             int row = emptyRows.front();
             emptyRows.pop_front();
 
-            // copy current row to first empty row
-            // and clear current row
             for (int i = 0; i < FieldX; i++)
             {
                 field[row][i] = field[y][i];
@@ -502,6 +519,9 @@ void pushFieldDown(int field[FieldY][FieldX])
     }
 }
 
+/*
+    sets all blocks of the field to zero
+*/
 void clearField(int field[FieldY][FieldX])
 {
     for (int y = 0; y < FieldY; y++)

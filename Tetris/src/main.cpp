@@ -93,27 +93,20 @@ int main()
     next->pos.x = 0;
     next->pos.y = 0;
 
-    // game title text
-    sf::Text titleText;
-    titleText.setFont(font);
-    titleText.setCharacterSize(40);
-    titleText.setFillColor(sf::Color::Red);
-    titleText.setString("Tetris");
-    titleText.setPosition(420, 50);
-
+    sf::Color textColor(238, 238, 238, 255);
     // player stats text
     char playerStat[100];
     sf::Text statText;
     statText.setFont(font);
     statText.setCharacterSize(20);
-    statText.setFillColor(sf::Color::Red);
+    statText.setFillColor(textColor);
     statText.setPosition(420, 50);
 
     // game pause text
     sf::Text pauseText;
     pauseText.setFont(font);
     pauseText.setCharacterSize(20);
-    pauseText.setFillColor(sf::Color::Red);
+    pauseText.setFillColor(textColor);
     pauseText.setString("PAUSE");
     pauseText.setPosition(420, 125);
 
@@ -121,14 +114,14 @@ int main()
     sf::Text gameoverText;
     gameoverText.setFont(font);
     gameoverText.setCharacterSize(20);
-    gameoverText.setFillColor(sf::Color::Red);
+    gameoverText.setFillColor(textColor);
     gameoverText.setString("GAMEOVER");
     gameoverText.setPosition(420, 125);
 
     // game keys help text
     sf::Text helpText;
     helpText.setFont(font);
-    helpText.setFillColor(sf::Color::Blue);
+    helpText.setFillColor(textColor);
     helpText.setString(
         "Keys:\r\n[P] Pause\r\n[R] Restart\r\n[Space] Rotate\r\n[Arrows] Move");
     helpText.setCharacterSize(20);
@@ -195,10 +188,7 @@ int main()
             }
         }
 
-        window.clear(sf::Color(200, 200, 200, 255));
-
-        // show title text
-        //window.draw(titleText);
+        window.clear(sf::Color(57, 62, 70, 255));
 
         // show player statistics
         snprintf(

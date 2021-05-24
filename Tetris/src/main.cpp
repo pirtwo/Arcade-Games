@@ -391,7 +391,14 @@ int main()
 */
 Tetromino *getRandTetromino(TetrominoFactory *factory)
 {
-    return factory->create(static_cast<TetrominoType>(rand() % TetrominoNum + 1));
+    auto t = factory->create(
+        static_cast<TetrominoType>(rand() % TetrominoNum + 1));
+
+    // miror Tetromino with 50% chance
+    if (rand() <= RAND_MAX / 2)
+        t->miror();
+
+    return t;
 }
 
 /*

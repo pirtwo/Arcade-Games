@@ -73,3 +73,20 @@ void Tetromino::rotateLeft()
     _w = _h;
     _h = tempW;
 }
+
+void Tetromino::miror()
+{
+    for (int y = 0; y < _h; y++)
+    {
+        int temp[_w]{0};
+        for (int x = 0; x < _w; x++)
+        {
+            temp[_w - x - 1] = _blocks[y * _w + x];
+        }
+
+        for (int x = 0; x < _w; x++)
+        {
+            _blocks[y * _w + x] = temp[x];
+        }
+    }
+}

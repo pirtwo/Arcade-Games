@@ -43,7 +43,7 @@ void Field::draw(sf::RenderTarget &target, sf::RenderStates states) const
         int blockX = i - blockY * _w;
 
         auto sp = _sprites[_blocks[i]];
-        sp.setPosition(blockX, blockY);
+        sp.setPosition(blockX + _offsetX, blockY + _offsetY);
         target.draw(sp);
     }
 }

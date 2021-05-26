@@ -9,15 +9,14 @@ using namespace std;
 Field::Field(
     int w,
     int h,
-    int offsetX,
-    int offsetY,
     float blockScale,
     vector<sf::Texture *> &textures)
 {
+    offset.x = 0;
+    offset.y = 0;
+
     _w = w;
     _h = h;
-    _offsetX = offsetX;
-    _offsetY = offsetY;
     _blocks = new int[_w * _h]{0};
     _sprites = new sf::Sprite[textures.size()];
 
@@ -202,8 +201,8 @@ void Field::draw(sf::RenderTarget &target, sf::RenderStates states) const
         int blockX = i - blockY * _w;
 
         sp.setPosition(
-            blockX * sp.getGlobalBounds().width + _offsetX,
-            blockY * sp.getGlobalBounds().height + _offsetY);
+            blockX * sp.getGlobalBounds().width + offset.x,
+            blockY * sp.getGlobalBounds().height + offset.y);
         target.draw(sp);
     }
 }

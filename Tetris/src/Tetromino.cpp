@@ -9,15 +9,14 @@ using namespace std;
 Tetromino::Tetromino(
     int w,
     int h,
-    int offsetX,
-    int offsetY,
     float blockScale,
     sf::Texture &texture)
 {
+    offset.x = 0;
+    offset.y = 0;
+
     _w = w;
     _h = h;
-    _offsetX = offsetX;
-    _offsetY = offsetY;
     _blocks = new int[_w * _h]{0};
     _sp = new sf::Sprite(texture);
     _sp->setScale(blockScale, blockScale);
@@ -130,8 +129,8 @@ void Tetromino::draw(sf::RenderTarget &target, sf::RenderStates states) const
             int blockX = pos.x + x;
             int blockY = pos.y + y;
             _sp->setPosition(
-                blockX * _sp->getGlobalBounds().width + _offsetX,
-                blockY * _sp->getGlobalBounds().height + _offsetY);
+                blockX * _sp->getGlobalBounds().width + offset.x,
+                blockY * _sp->getGlobalBounds().height + offset.y);
             target.draw(*_sp);
         }
     }

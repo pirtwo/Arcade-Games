@@ -8,10 +8,11 @@ class Tetromino : public sf::Drawable
 protected:
     int _w;
     int _h;
-    int _offsetX;
-    int _offsetY;
     int *_blocks;
     mutable sf::Sprite *_sp;
+
+public:
+    sf::Vector2i offset;
 
 public:
     friend class TetrominoFactory;
@@ -20,8 +21,6 @@ public:
     Tetromino(
         int w,
         int h,
-        int offsetX,
-        int offsetY,
         float blockScale,
         sf::Texture &texture);
     virtual ~Tetromino();

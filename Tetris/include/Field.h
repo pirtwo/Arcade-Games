@@ -14,17 +14,16 @@ class Field : public sf::Drawable
 protected:
     int _w;
     int _h;
-    int _offsetX;
-    int _offsetY;
     int *_blocks;
     sf::Sprite *_sprites;
+
+public:
+    sf::Vector2i offset;
 
 public:
     Field(
         int w,
         int h,
-        int offsetX,
-        int offsetY,
         float blockScale,
         vector<sf::Texture *> &textures);
     virtual ~Field();

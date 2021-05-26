@@ -1,15 +1,24 @@
 #include "Tetromino.h"
+#include <SFML/Graphics.hpp>
 #include <iostream>
 #include <iterator>
 #include <algorithm>
 
 using namespace std;
 
-Tetromino::Tetromino(int w, int h)
+Tetromino::Tetromino(
+    int w,
+    int h,
+    int offsetX,
+    int offsetY,
+    sf::Texture &texture)
 {
     _w = w;
     _h = h;
-    _blocks = new int[w * h]{0};
+    _offsetX = offsetX;
+    _offsetY = offsetY;
+    _blocks = new int[_w * _h]{0};
+    sf::Sprite _sp(texture);
 }
 
 Tetromino::~Tetromino()
@@ -27,13 +36,19 @@ int Tetromino::getHeight()
     return _h;
 }
 
-int Tetromino::getValue(int x, int y)
+/*
+    returns value at block(x,y) of the current Tetromino 
+*/
+int Tetromino::getValue(int x, int y) const
 {
     if (x < 0 || x >= _w || y < 0 || y >= _h)
         return -1;
     return _blocks[y * _w + x];
 }
 
+/*
+    rotates Tetromino clockwise
+*/
 void Tetromino::rotateRight()
 {
     int temp[_w * _h] = {0};
@@ -54,6 +69,9 @@ void Tetromino::rotateRight()
     _h = tempW;
 }
 
+/*
+    rotate Tetromino counter clockwise
+*/
 void Tetromino::rotateLeft()
 {
     int temp[_w * _h] = {0};
@@ -74,7 +92,10 @@ void Tetromino::rotateLeft()
     _h = tempW;
 }
 
-void Tetromino::miror()
+/*
+    mirrors the Tetrominos shape in X axis
+*/
+void Tetromino::mirrorX()
 {
     for (int y = 0; y < _h; y++)
     {
@@ -87,6 +108,25 @@ void Tetromino::miror()
         for (int x = 0; x < _w; x++)
         {
             _blocks[y * _w + x] = temp[x];
+        }
+    }
+}
+
+/*
+    draw Tetromino into a screen
+*/
+void Tetromino::draw(sf::RenderTarget &target, sf::RenderStates states) const
+{
+    for (int y = 0; y < _h; y++)
+    {
+        for (int x = 0; x < _w; x++)
+        {
+            if (getValue(x, y) == 0)
+                continue;
+            int blockX = pos.x + x + _offsetX;
+            int blockY = pos.y + y + _offsetY;
+            _sp.setPosition(blockX, blockY);
+            target.draw(_sp);
         }
     }
 }

@@ -1,5 +1,6 @@
 #include "Field.h"
 #include <SFML/Graphics.hpp>
+#include <iostream>
 #include <list>
 #include <vector>
 #include "Tetromino.h"
@@ -29,6 +30,7 @@ Field::Field(
 
 Field::~Field()
 {
+    cout << "~field \r\n";
     delete[] _blocks;
     delete[] _sprites;
 }
@@ -36,17 +38,17 @@ Field::~Field()
 /*
     adds Tetromino to the field
 */
-void Field::addTetromino(Tetromino *t)
+void Field::addTetromino(Tetromino &t)
 {
-    for (int y = 0; y < t->getHeight(); y++)
+    for (int y = 0; y < t.getHeight(); y++)
     {
-        for (int x = 0; x < t->getWidth(); x++)
+        for (int x = 0; x < t.getWidth(); x++)
         {
-            if (t->getValue(x, y) == 0)
+            if (t.getValue(x, y) == 0)
                 continue;
-            int blockX = t->pos.x + x;
-            int blockY = t->pos.y + y;
-            _blocks[blockY * _w + blockX] = t->getValue(x, y);
+            int blockX = t.pos.x + x;
+            int blockY = t.pos.y + y;
+            _blocks[blockY * _w + blockX] = t.getValue(x, y);
         }
     }
 }
@@ -151,17 +153,17 @@ int Field::removeCompleteRows()
 /*
     checks for Tetromino collision with bounds or non zero blocks in X axis
 */
-bool Field::collisionX(Tetromino *t)
+bool Field::collisionX(Tetromino &t)
 {
-    for (int y = 0; y < t->getHeight(); y++)
+    for (int y = 0; y < t.getHeight(); y++)
     {
-        for (int x = 0; x < t->getWidth(); x++)
+        for (int x = 0; x < t.getWidth(); x++)
         {
-            if (t->getValue(x, y) == 0)
+            if (t.getValue(x, y) == 0)
                 continue;
 
-            int blockX = t->pos.x + x;
-            int blockY = t->pos.y + y;
+            int blockX = t.pos.x + x;
+            int blockY = t.pos.y + y;
             if (blockX < 0 || blockX >= _w || _blocks[blockY * _w + blockX] != 0)
                 return true;
         }
@@ -173,17 +175,17 @@ bool Field::collisionX(Tetromino *t)
 /*
     checks for Tetromino collision with bounds or non zero blocks in Y axis
 */
-bool Field::collisionY(Tetromino *t)
+bool Field::collisionY(Tetromino &t)
 {
-    for (int y = t->getHeight() - 1; y >= 0; y--)
+    for (int y = t.getHeight() - 1; y >= 0; y--)
     {
-        for (int x = t->getWidth() - 1; x >= 0; x--)
+        for (int x = t.getWidth() - 1; x >= 0; x--)
         {
-            if (t->getValue(x, y) == 0)
+            if (t.getValue(x, y) == 0)
                 continue;
 
-            int blockX = t->pos.x + x;
-            int blockY = t->pos.y + y;
+            int blockX = t.pos.x + x;
+            int blockY = t.pos.y + y;
             if (blockY < 0 || blockY >= _h || _blocks[blockY * _w + blockX] != 0)
                 return true;
         }

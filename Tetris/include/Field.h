@@ -27,14 +27,15 @@ public:
         float blockScale,
         vector<sf::Texture *> &textures);
     virtual ~Field();
-
     virtual int removeCompleteRows();
-    virtual bool collisionX(Tetromino *t);
-    virtual bool collisionY(Tetromino *t);
+    virtual bool collisionX(Tetromino &t);
+    virtual bool collisionY(Tetromino &t);
     virtual void clear();
     virtual void pushDown();
-    virtual void addTetromino(Tetromino *t);
-    virtual void draw(sf::RenderTarget &target, sf::RenderStates states) const;
+    virtual void addTetromino(Tetromino &t);
+    virtual void draw(
+        sf::RenderTarget &target,
+        sf::RenderStates states) const;
 };
 
 #endif

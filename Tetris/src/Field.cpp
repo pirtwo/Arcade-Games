@@ -7,17 +7,17 @@
 using namespace std;
 
 Field::Field(
-    int x,
-    int y,
+    int w,
+    int h,
     int offsetX,
     int offsetY,
     vector<sf::Texture> &textures)
 {
-    _x = x;
-    _y = y;
+    _w = w;
+    _h = h;
     _offsetX = offsetX;
     _offsetY = offsetY;
-    _blocks = new int[_x * _y]{0};
+    _blocks = new int[_w * _h]{0};
     _sprites = new sf::Sprite[textures.size()];
 
     for (int i = 0; i < textures.size(); i++)
@@ -37,10 +37,10 @@ Field::~Field()
 */
 void Field::draw(sf::RenderTarget &target, sf::RenderStates states) const
 {
-    for (int i = 0; i < _x * _y; i++)
+    for (int i = 0; i < _w * _h; i++)
     {
-        int blockY = i / _y;
-        int blockX = i - blockY * _x;
+        int blockY = i / _h;
+        int blockX = i - blockY * _w;
 
         auto sp = _sprites[_blocks[i]];
         sp.setPosition(blockX, blockY);
@@ -61,7 +61,7 @@ void Field::addTetromino(Tetromino *t)
                 continue;
             int blockX = t->pos.x + x;
             int blockY = t->pos.y + y;
-            _blocks[blockY * _x + blockX] = t->getValue(x, y);
+            _blocks[blockY * _w + blockX] = t->getValue(x, y);
         }
     }
 }
@@ -71,7 +71,7 @@ void Field::addTetromino(Tetromino *t)
 */
 void Field::clear()
 {
-    for (int i = 0; i < _x * _y; i++)
+    for (int i = 0; i < _w * _h; i++)
         _blocks[i] = 0;
 }
 
@@ -81,16 +81,16 @@ void Field::clear()
 void Field::pushDown()
 {
     list<int> emptyRows;
-    for (int y = 0; y < _y; y++)
+    for (int y = 0; y < _h; y++)
     {
         /*
             check row to see if it's empty or not
         */
 
         bool isEmpty = true;
-        for (int x = 0; x < _x; x++)
+        for (int x = 0; x < _w; x++)
         {
-            if (_blocks[y * _x + x] != 0)
+            if (_blocks[y * _w + x] != 0)
             {
                 isEmpty = false;
                 break;
@@ -114,8 +114,8 @@ void Field::pushDown()
 
             int rowIdx = emptyRows.front();
             emptyRows.pop_front();
-            for (int x = 0; x < _x; x++)
-                _blocks[rowIdx * _x + x] = _blocks[y * _x + x];
+            for (int x = 0; x < _w; x++)
+                _blocks[rowIdx * _w + x] = _blocks[y * _w + x];
         }
     }
 }
@@ -126,16 +126,16 @@ void Field::pushDown()
 int Field::removeCompleteRows()
 {
     int completeNum = 0;
-    for (int y = 0; y < _y; y++)
+    for (int y = 0; y < _h; y++)
     {
         /*
             check to see if row is complete
         */
 
         bool isComplete = true;
-        for (int x = 0; x < _x; x++)
+        for (int x = 0; x < _w; x++)
         {
-            if (_blocks[y * _x + x] == 0)
+            if (_blocks[y * _w + x] == 0)
             {
                 isComplete = false;
                 break;
@@ -149,9 +149,9 @@ int Field::removeCompleteRows()
                 add one to complete row counter
             */
 
-            for (int x = 0; x < _x; x++)
+            for (int x = 0; x < _w; x++)
             {
-                _blocks[y * _x + x] = 0;
+                _blocks[y * _w + x] = 0;
                 completeNum++;
             }
         }
@@ -174,7 +174,7 @@ bool Field::collisionX(Tetromino *t)
 
             int blockX = t->pos.x + x;
             int blockY = t->pos.y + y;
-            if (blockX < 0 || blockX >= _x || _blocks[blockY * _x + blockX] != 0)
+            if (blockX < 0 || blockX >= _w || _blocks[blockY * _w + blockX] != 0)
                 return true;
         }
     }
@@ -196,7 +196,7 @@ bool Field::collisionY(Tetromino *t)
 
             int blockX = t->pos.x + x;
             int blockY = t->pos.y + y;
-            if (blockY < 0 || blockY >= _y || _blocks[blockY * _x + blockX] != 0)
+            if (blockY < 0 || blockY >= _h || _blocks[blockY * _w + blockX] != 0)
                 return true;
         }
     }

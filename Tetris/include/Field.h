@@ -12,8 +12,8 @@ class Tetromino;
 class Field : public sf::Drawable
 {
 protected:
-    int _x;
-    int _y;
+    int _w;
+    int _h;
     int _offsetX;
     int _offsetY;
     int *_blocks;
@@ -21,8 +21,8 @@ protected:
 
 public:
     Field(
-        int x,
-        int y,
+        int w,
+        int h,
         int offsetX,
         int offsetY,
         vector<sf::Texture> &textures);

@@ -81,22 +81,6 @@ int main()
     statText.setFillColor(textColor);
     statText.setPosition(420, 50);
 
-    // game pause text
-    sf::Text pauseText;
-    pauseText.setFont(font);
-    pauseText.setCharacterSize(20);
-    pauseText.setFillColor(textColor);
-    pauseText.setString("PAUSE");
-    pauseText.setPosition(420, 125);
-
-    // gameover text
-    sf::Text gameoverText;
-    gameoverText.setFont(font);
-    gameoverText.setCharacterSize(20);
-    gameoverText.setFillColor(textColor);
-    gameoverText.setString("GAMEOVER");
-    gameoverText.setPosition(420, 125);
-
     // game keys help text
     sf::Text helpText;
     helpText.setFont(font);
@@ -168,28 +152,15 @@ int main()
             }
         }
 
-        window.clear(sf::Color(57, 62, 70, 255));
-
-        // show player statistics
+        // ======= update ========
         snprintf(
             playerStat, 100,
-            "Statistics:\r\nScore: %d\r\nLines: %d",
+            "Statistics:\r\nScore: %d\r\nLines: %d\r\n%s\r\n%s",
             gameState.score,
-            gameState.lines);
+            gameState.lines,
+            gameState.pause ? "PAUSE" : "",
+            gameState.gameover ? "GAMEOVER" : "");
         statText.setString(playerStat);
-        window.draw(statText);
-
-        // show game status text
-        if (gameState.pause)
-            window.draw(pauseText);
-        if (gameState.gameover)
-            window.draw(gameoverText);
-
-        window.draw(helpText);
-
-        window.draw(*field);
-        window.draw(*currTetromino);
-        window.draw(*nextTetromino);
 
         if (completeLines > 0)
             field->pushDown();
@@ -226,6 +197,13 @@ int main()
             clock.restart();
         }
 
+        // ======= draw ========
+        window.clear(sf::Color(57, 62, 70, 255));
+        window.draw(statText);
+        window.draw(helpText);
+        window.draw(*field);
+        window.draw(*currTetromino);
+        window.draw(*nextTetromino);
         window.display();
     }
 

@@ -66,7 +66,7 @@ void Field::clear()
 void Field::pushDown()
 {
     list<int> emptyRows;
-    for (int y = 0; y < _h; y++)
+    for (int y = _h - 1; y >= 0; y--)
     {
         /*
             check row to see if it's empty or not
@@ -100,7 +100,10 @@ void Field::pushDown()
             int rowIdx = emptyRows.front();
             emptyRows.pop_front();
             for (int x = 0; x < _w; x++)
+            {
                 _blocks[rowIdx * _w + x] = _blocks[y * _w + x];
+                _blocks[y * _w + x] = 0;
+            }
         }
     }
 }
@@ -111,7 +114,7 @@ void Field::pushDown()
 int Field::removeCompleteRows()
 {
     int completeNum = 0;
-    for (int y = 0; y < _h; y++)
+    for (int y = _h - 1; y >= 0; y--)
     {
         /*
             check to see if row is complete
@@ -137,8 +140,8 @@ int Field::removeCompleteRows()
             for (int x = 0; x < _w; x++)
             {
                 _blocks[y * _w + x] = 0;
-                completeNum++;
             }
+            completeNum++;
         }
     }
 

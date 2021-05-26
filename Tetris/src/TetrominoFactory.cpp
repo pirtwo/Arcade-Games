@@ -1,6 +1,5 @@
 #include "TetrominoFactory.h"
 #include <SFML/Graphics.hpp>
-#include <iostream>
 #include <vector>
 #include <memory>
 #include "Tetromino.h"
@@ -14,7 +13,7 @@ TetrominoFactory::TetrominoFactory(vector<shared_ptr<sf::Texture>> &textures)
 
 TetrominoFactory::~TetrominoFactory()
 {
-    cout << "~factory \r\n";
+    //
 }
 
 unique_ptr<Tetromino> TetrominoFactory::create(TetrominoType tetroType, float scale)

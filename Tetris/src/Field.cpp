@@ -1,6 +1,5 @@
 #include "Field.h"
 #include <SFML/Graphics.hpp>
-#include <iostream>
 #include <list>
 #include <vector>
 #include <memory>
@@ -31,7 +30,6 @@ Field::Field(
 
 Field::~Field()
 {
-    cout << "~field \r\n";
     delete[] _blocks;
     delete[] _sprites;
 }

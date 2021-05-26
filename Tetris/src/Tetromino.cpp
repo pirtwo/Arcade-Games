@@ -1,6 +1,5 @@
 #include "Tetromino.h"
 #include <SFML/Graphics.hpp>
-#include <iostream>
 #include <iterator>
 #include <algorithm>
 
@@ -24,7 +23,6 @@ Tetromino::Tetromino(
 
 Tetromino::~Tetromino()
 {
-    cout << "~tetro \r\n";
     delete _sp;
     delete[] _blocks;
 }

@@ -11,6 +11,7 @@ Tetromino::Tetromino(
     int h,
     int offsetX,
     int offsetY,
+    float blockScale,
     sf::Texture &texture)
 {
     _w = w;
@@ -18,11 +19,13 @@ Tetromino::Tetromino(
     _offsetX = offsetX;
     _offsetY = offsetY;
     _blocks = new int[_w * _h]{0};
-    sf::Sprite _sp(texture);
+    _sp = new sf::Sprite(texture);
+    _sp->setScale(blockScale, blockScale);
 }
 
 Tetromino::~Tetromino()
 {
+    delete _sp;
     delete[] _blocks;
 }
 
@@ -123,10 +126,13 @@ void Tetromino::draw(sf::RenderTarget &target, sf::RenderStates states) const
         {
             if (getValue(x, y) == 0)
                 continue;
-            int blockX = pos.x + x + _offsetX;
-            int blockY = pos.y + y + _offsetY;
-            _sp.setPosition(blockX, blockY);
-            target.draw(_sp);
+
+            int blockX = pos.x + x;
+            int blockY = pos.y + y;
+            _sp->setPosition(
+                blockX * _sp->getGlobalBounds().width + _offsetX,
+                blockY * _sp->getGlobalBounds().height + _offsetY);
+            target.draw(*_sp);
         }
     }
 }

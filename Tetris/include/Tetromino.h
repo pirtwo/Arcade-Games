@@ -11,7 +11,7 @@ protected:
     int _offsetX;
     int _offsetY;
     int *_blocks;
-    mutable sf::Sprite _sp;
+    mutable sf::Sprite *_sp;
 
 public:
     friend class TetrominoFactory;
@@ -22,6 +22,7 @@ public:
         int h,
         int offsetX,
         int offsetY,
+        float blockScale,
         sf::Texture &texture);
     virtual ~Tetromino();
     virtual int getWidth();

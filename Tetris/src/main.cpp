@@ -36,13 +36,13 @@ int main()
 
     // load assets
     sf::Font font;
-    vector<sf::Texture *> textures;
-    textures.push_back(new sf::Texture());
-    textures.push_back(new sf::Texture());
-    textures.push_back(new sf::Texture());
-    textures.push_back(new sf::Texture());
-    textures.push_back(new sf::Texture());
-    textures.push_back(new sf::Texture());
+    vector<shared_ptr<sf::Texture>> textures;
+    textures.push_back(shared_ptr<sf::Texture>(new sf::Texture()));
+    textures.push_back(shared_ptr<sf::Texture>(new sf::Texture()));
+    textures.push_back(shared_ptr<sf::Texture>(new sf::Texture()));
+    textures.push_back(shared_ptr<sf::Texture>(new sf::Texture()));
+    textures.push_back(shared_ptr<sf::Texture>(new sf::Texture()));
+    textures.push_back(shared_ptr<sf::Texture>(new sf::Texture()));
 
     if (!font.loadFromFile("./assets/FredokaOne-Regular.ttf") ||
         !textures[0]->loadFromFile("./assets/tileGrey.png") ||
@@ -204,9 +204,6 @@ int main()
         window.draw(*nextTetromino);
         window.display();
     }
-
-    for (auto texture : textures)
-        delete texture;
 
     return EXIT_SUCCESS;
 }

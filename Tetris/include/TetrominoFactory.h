@@ -21,10 +21,10 @@ enum TetrominoType
 class TetrominoFactory
 {
 public:
-    vector<sf::Texture *> *textures;
+    vector<shared_ptr<sf::Texture>> *textures;
 
 public:
-    TetrominoFactory(vector<sf::Texture *> &textures);
+    TetrominoFactory(vector<shared_ptr<sf::Texture>> &textures);
     ~TetrominoFactory();
     unique_ptr<Tetromino> create(TetrominoType tetroType, float scale);
 };

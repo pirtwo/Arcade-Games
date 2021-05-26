@@ -4,6 +4,7 @@
 #include <SFML/Graphics.hpp>
 #include <list>
 #include <vector>
+#include <memory>
 
 using namespace std;
 
@@ -25,7 +26,7 @@ public:
         int w,
         int h,
         float blockScale,
-        vector<sf::Texture *> &textures);
+        vector<shared_ptr<sf::Texture>> &textures);
     virtual ~Field();
     virtual int removeCompleteRows();
     virtual bool collisionX(Tetromino &t);

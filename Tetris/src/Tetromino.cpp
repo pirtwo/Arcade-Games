@@ -24,6 +24,7 @@ Tetromino::Tetromino(
 
 Tetromino::~Tetromino()
 {
+    cout << "~tetro \r\n";
     delete _sp;
     delete[] _blocks;
 }

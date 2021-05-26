@@ -7,7 +7,7 @@
 
 using namespace std;
 
-TetrominoFactory::TetrominoFactory(vector<sf::Texture *> &textures)
+TetrominoFactory::TetrominoFactory(vector<shared_ptr<sf::Texture>> &textures)
 {
     this->textures = &textures;
 }

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <list>
 #include <vector>
+#include <memory>
 #include "Tetromino.h"
 
 using namespace std;
@@ -11,7 +12,7 @@ Field::Field(
     int w,
     int h,
     float blockScale,
-    vector<sf::Texture *> &textures)
+    vector<shared_ptr<sf::Texture>> &textures)
 {
     offset.x = 0;
     offset.y = 0;

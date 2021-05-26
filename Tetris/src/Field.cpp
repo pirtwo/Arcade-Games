@@ -11,7 +11,8 @@ Field::Field(
     int h,
     int offsetX,
     int offsetY,
-    vector<sf::Texture> &textures)
+    float blockScale,
+    vector<sf::Texture *> &textures)
 {
     _w = w;
     _h = h;
@@ -22,7 +23,8 @@ Field::Field(
 
     for (int i = 0; i < textures.size(); i++)
     {
-        _sprites[i].setTexture(textures[i]);
+        _sprites[i].setTexture(*textures[i]);
+        _sprites[i].setScale(blockScale, blockScale);
     }
 }
 
@@ -30,22 +32,6 @@ Field::~Field()
 {
     delete[] _blocks;
     delete[] _sprites;
-}
-
-/*
-    draws field on screen
-*/
-void Field::draw(sf::RenderTarget &target, sf::RenderStates states) const
-{
-    for (int i = 0; i < _w * _h; i++)
-    {
-        int blockY = i / _h;
-        int blockX = i - blockY * _w;
-
-        auto sp = _sprites[_blocks[i]];
-        sp.setPosition(blockX + _offsetX, blockY + _offsetY);
-        target.draw(sp);
-    }
 }
 
 /*
@@ -202,4 +188,22 @@ bool Field::collisionY(Tetromino *t)
     }
 
     return false;
+}
+
+/*
+    draws field on screen
+*/
+void Field::draw(sf::RenderTarget &target, sf::RenderStates states) const
+{
+    for (int i = 0; i < _w * _h; i++)
+    {
+        auto sp = _sprites[_blocks[i]];
+        int blockY = i / _w;
+        int blockX = i - blockY * _w;
+
+        sp.setPosition(
+            blockX * sp.getGlobalBounds().width + _offsetX,
+            blockY * sp.getGlobalBounds().height + _offsetY);
+        target.draw(sp);
+    }
 }

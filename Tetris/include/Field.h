@@ -25,7 +25,8 @@ public:
         int h,
         int offsetX,
         int offsetY,
-        vector<sf::Texture> &textures);
+        float blockScale,
+        vector<sf::Texture *> &textures);
     virtual ~Field();
 
     virtual int removeCompleteRows();

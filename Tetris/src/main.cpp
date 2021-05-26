@@ -1,7 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <stdlib.h>
-#include <list>
 #include <vector>
+#include <memory>
 #include "Field.h"
 #include "Tetromino.h"
 #include "TetrominoFactory.h"
@@ -27,7 +27,7 @@ struct State
     int lines = 0;
 } gameState;
 
-Tetromino *getRandTetromino(TetrominoFactory *factory);
+unique_ptr<Tetromino> getRandTetromino(TetrominoFactory &factory);
 
 int main()
 {
@@ -57,15 +57,14 @@ int main()
     sf::Clock clock;
     float delay = 0.5;
 
-    Field *field = new Field(11, 20, Scale, textures);
     int completeLines = 0;
+    unique_ptr<Field> field(new Field(11, 20, Scale, textures));
+    unique_ptr<TetrominoFactory> tf(new TetrominoFactory(textures));
+    unique_ptr<Tetromino> currTetromino;
+    unique_ptr<Tetromino> nextTetromino;
 
-    Tetromino *currTetromino;
-    Tetromino *nextTetromino;
-    TetrominoFactory *tf = new TetrominoFactory(textures);
-
-    currTetromino = getRandTetromino(tf);
-    nextTetromino = getRandTetromino(tf);
+    currTetromino = getRandTetromino(*tf);
+    nextTetromino = getRandTetromino(*tf);
     currTetromino->pos.x = SpawnPoint.x;
     currTetromino->pos.y = SpawnPoint.y;
     nextTetromino->pos.x = 0;
@@ -109,13 +108,13 @@ int main()
                 if (e.key.code == sf::Keyboard::Key::Left)
                 {
                     currTetromino->pos.x -= 1;
-                    if (field->collisionX(currTetromino))
+                    if (field->collisionX(*currTetromino))
                         currTetromino->pos.x += 1;
                 }
                 if (e.key.code == sf::Keyboard::Key::Right)
                 {
                     currTetromino->pos.x += 1;
-                    if (field->collisionX(currTetromino))
+                    if (field->collisionX(*currTetromino))
                         currTetromino->pos.x -= 1;
                 }
                 if (e.key.code == sf::Keyboard::Key::Down)
@@ -125,7 +124,7 @@ int main()
                 if (e.key.code == sf::Keyboard::Key::Space)
                 {
                     currTetromino->rotateRight();
-                    if (field->collisionX(currTetromino))
+                    if (field->collisionX(*currTetromino))
                         currTetromino->rotateLeft();
                 }
                 if (e.key.code == sf::Keyboard::Key::P)
@@ -138,11 +137,11 @@ int main()
                     gameState.gameover = false;
                     gameState.score = 0;
 
-                    currTetromino = getRandTetromino(tf);
+                    currTetromino = getRandTetromino(*tf);
                     currTetromino->pos.x = SpawnPoint.x;
                     currTetromino->pos.y = SpawnPoint.y;
 
-                    nextTetromino = getRandTetromino(tf);
+                    nextTetromino = getRandTetromino(*tf);
                     nextTetromino->pos.x = 0;
                     nextTetromino->pos.y = 0;
                     nextTetromino->offset = NextShowPoint;
@@ -170,10 +169,10 @@ int main()
             clock.getElapsedTime().asSeconds() > delay)
         {
             currTetromino->pos.y += 1;
-            if (field->collisionY(currTetromino))
+            if (field->collisionY(*currTetromino))
             {
                 currTetromino->pos.y -= 1;
-                field->addTetromino(currTetromino);
+                field->addTetromino(*currTetromino);
                 completeLines = field->removeCompleteRows();
                 if (completeLines > 0)
                 {
@@ -181,18 +180,17 @@ int main()
                     gameState.lines += completeLines;
                 }
 
-                delete currTetromino;
-                currTetromino = nextTetromino;
+                currTetromino = move(nextTetromino);
                 currTetromino->pos.x = SpawnPoint.x;
                 currTetromino->pos.y = SpawnPoint.y;
-                nextTetromino->offset = sf::Vector2i(0, 0);
+                currTetromino->offset = sf::Vector2i(0, 0);
 
-                nextTetromino = getRandTetromino(tf);
+                nextTetromino = getRandTetromino(*tf);
                 nextTetromino->pos.x = 0;
                 nextTetromino->pos.y = 0;
                 nextTetromino->offset = NextShowPoint;
 
-                gameState.gameover = field->collisionY(currTetromino);
+                gameState.gameover = field->collisionY(*currTetromino);
             }
             clock.restart();
         }
@@ -207,10 +205,6 @@ int main()
         window.display();
     }
 
-    delete tf;
-    delete currTetromino;
-    delete nextTetromino;
-    delete field;
     for (auto texture : textures)
         delete texture;
 
@@ -220,9 +214,9 @@ int main()
 /*
     returns a random Tetromino
 */
-Tetromino *getRandTetromino(TetrominoFactory *factory)
+unique_ptr<Tetromino> getRandTetromino(TetrominoFactory &factory)
 {
-    auto t = factory->create(
+    auto t = factory.create(
         static_cast<TetrominoType>(rand() % TetrominoNum + 1), Scale);
 
     // mirror Tetromino with 50% chance

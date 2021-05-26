@@ -3,6 +3,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <vector>
+#include <memory>
 
 using namespace std;
 
@@ -21,8 +22,11 @@ class TetrominoFactory
 {
 public:
     vector<sf::Texture *> *textures;
+
+public:
     TetrominoFactory(vector<sf::Texture *> &textures);
-    Tetromino *create(TetrominoType tetroType, float scale);
+    ~TetrominoFactory();
+    unique_ptr<Tetromino> create(TetrominoType tetroType, float scale);
 };
 
 #endif

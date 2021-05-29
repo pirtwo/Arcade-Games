@@ -13,6 +13,10 @@ protected:
     sf::Vector2f _friction;
 
 public:
+    float turnRate;
+    float maxSpeed;
+
+public:
     Spacecraft(sf::Texture &texture);
     virtual ~Spacecraft();
     virtual void update();

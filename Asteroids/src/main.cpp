@@ -5,6 +5,22 @@
 
 using namespace std;
 
+struct Key
+{
+    bool isDown = false;
+    bool isUp = true;
+    void press()
+    {
+        isDown = true;
+        isUp = false;
+    }
+    void release()
+    {
+        isDown = false;
+        isUp = true;
+    }
+} upArrow, leftArrow, rightArrow;
+
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(800, 700), "Asteroids");
@@ -31,29 +47,60 @@ int main()
             {
                 window.close();
             }
-            if (e.type == sf::Event::KeyPressed)
+            else if (e.type == sf::Event::KeyPressed)
             {
                 switch (e.key.code)
                 {
                 case sf::Keyboard::Key::Up:
-                    ship->forward();
+                    upArrow.press();
                     break;
                 case sf::Keyboard::Key::Left:
-                    ship->turnLeft();
+                    leftArrow.press();
                     break;
                 case sf::Keyboard::Key::Right:
-                    ship->turnRight();
+                    rightArrow.press();
                     break;
                 default:
                     break;
                 }
             }
-            if (e.type == sf::Event::KeyReleased)
+            else if (e.type == sf::Event::KeyReleased)
             {
+                switch (e.key.code)
+                {
+                case sf::Keyboard::Key::Up:
+                    upArrow.release();
+                    break;
+                case sf::Keyboard::Key::Left:
+                    leftArrow.release();
+                    break;
+                case sf::Keyboard::Key::Right:
+                    rightArrow.release();
+                    break;
+                }
             }
         }
 
         //====== update =======
+        if (leftArrow.isDown)
+            ship->turnLeft();
+        if (rightArrow.isDown)
+            ship->turnRight();
+        if (upArrow.isDown)
+            ship->forward();
+        else
+            ship->stop();
+
+        // keep spaceship inside the window
+        if (ship->getPosition().x < 0)
+            ship->setPosition(sf::Vector2f(window.getSize().x, ship->getPosition().y));
+        if (ship->getPosition().x > window.getSize().x)
+            ship->setPosition(sf::Vector2f(0, ship->getPosition().y));
+        if (ship->getPosition().y < 0)
+            ship->setPosition(sf::Vector2f(ship->getPosition().x, window.getSize().y));
+        if (ship->getPosition().y > window.getSize().y)
+            ship->setPosition(sf::Vector2f(ship->getPosition().x, 0));
+
         ship->update();
 
         //====== draw =========

@@ -2,6 +2,7 @@
 #include <vector>
 #include <memory>
 #include "Spacecraft.h"
+#include "Emitter.h"
 
 using namespace std;
 
@@ -34,9 +35,11 @@ int main()
         return EXIT_FAILURE;
     }
 
-    Spacecraft *ship = new Spacecraft(*textures[0]);
+    Spacecraft *ship = new Spacecraft(*textures[0], 5.0, 4.5, 0.99, 0.1);
     ship->setPosition(sf::Vector2f(200, 200));
     ship->setScale(sf::Vector2f(0.5, 0.5));
+
+    Emitter *emitter = new Emitter(100.f, 100.f, 20, 60.f, 120.f, 2.f, 4.f, 1.f, 2.f, 100.f);
 
     while (window.isOpen())
     {
@@ -87,9 +90,9 @@ int main()
         if (rightArrow.isDown)
             ship->turnRight();
         if (upArrow.isDown)
-            ship->forward();
+            ship->thrust();
         else
-            ship->stop();
+            ship->reverseThrust();
 
         // keep spaceship inside the window
         if (ship->getPosition().x < 0)
@@ -102,14 +105,18 @@ int main()
             ship->setPosition(sf::Vector2f(ship->getPosition().x, 0));
 
         ship->update();
+        emitter->update();
 
         //====== draw =========
         window.clear();
 
         window.draw(*ship);
+        window.draw(*emitter);
 
         window.display();
     }
+
+    delete emitter;
 
     return EXIT_SUCCESS;
 }

@@ -4,16 +4,23 @@
 
 const float PI = 3.14;
 
-Spacecraft::Spacecraft(sf::Texture &texture)
+Spacecraft::Spacecraft(
+    sf::Texture &texture,
+    float maxSpeed,
+    float turnRate,
+    float friction,
+    float acceleration)
 {
-    turnRate = 4.5;
-    maxSpeed = 4.0;
+    _maxSpeed = maxSpeed;
+    _turnRate = turnRate;
+    _friction = friction;
+    _acceleration = acceleration;
 
     _velocity =
         sf::Vector2f(0, 0);
-    _acceleration =
+    _engThr =
         sf::Vector2f(0, 0);
-    _friction =
+    _engRev =
         sf::Vector2f(1, 1);
 
     _sp = sf::Sprite(texture);
@@ -27,51 +34,49 @@ Spacecraft::~Spacecraft()
     //
 }
 
-void Spacecraft::forward()
+void Spacecraft::thrust()
 {
-    _acceleration.x = 0.2;
-    _acceleration.y = 0.2;
-    _friction.x = 1;
-    _friction.y = 1;
+    _engThr.x = cos(getRotation() * PI / 180) * _acceleration;
+    _engThr.y = sin(getRotation() * PI / 180) * _acceleration;
+    _engRev.x = 1;
+    _engRev.y = 1;
 }
 
-void Spacecraft::stop()
+void Spacecraft::reverseThrust()
 {
-    _acceleration.x = 0;
-    _acceleration.y = 0;
-    _friction.x = 0.99;
-    _friction.y = 0.99;
+    _engThr.x = 0;
+    _engThr.y = 0;
+    _engRev.x = _friction;
+    _engRev.y = _friction;
 }
 
 void Spacecraft::turnLeft()
 {
-    rotate(turnRate * -1);
+    rotate(_turnRate * -1);
 }
 
 void Spacecraft::turnRight()
 {
-    rotate(turnRate);
+    rotate(_turnRate);
 }
 
 void Spacecraft::update()
 {
-    // calculate magnitude of the ship
+    _velocity.x += _engThr.x;
+    _velocity.y += _engThr.y;
+
+    // control ship speed
     float m = sqrt(pow(_velocity.x, 2) + pow(_velocity.y, 2));
+    if (m > _maxSpeed)
+    {
+        float angle = atan2(_velocity.y, _velocity.x);
+        _velocity.x = cos(angle) * _maxSpeed;
+        _velocity.y = sin(angle) * _maxSpeed;
+    }
 
-    // control ship max speed
-    m = m >= maxSpeed ? maxSpeed : m;
+    _velocity.x *= _engRev.x;
+    _velocity.y *= _engRev.y;
 
-    // apply ship rotation
-    _velocity.x = m * cos(getRotation() * PI / 180);
-    _velocity.y = m * sin(getRotation() * PI / 180);
-
-    // apply acceleration and friction
-    _velocity.x += _velocity.x > 0 ? _acceleration.x : -_acceleration.x;
-    _velocity.y += _velocity.y > 0 ? _acceleration.y : -_acceleration.y;
-    _velocity.x *= _friction.x;
-    _velocity.y *= _friction.y;
-
-    // move the ship
     move(_velocity.x, _velocity.y);
 }
 

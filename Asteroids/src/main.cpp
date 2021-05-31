@@ -2,7 +2,7 @@
 #include <vector>
 #include <memory>
 #include "Spacecraft.h"
-#include "Emitter.h"
+#include "Particle.h"
 
 using namespace std;
 
@@ -35,11 +35,16 @@ int main()
         return EXIT_FAILURE;
     }
 
-    Spacecraft *ship = new Spacecraft(*textures[0], 5.0, 4.5, 0.99, 0.1);
+    auto ship = unique_ptr<Spacecraft>(
+        new Spacecraft(*textures[0], 5.0, 4.5, 0.99, 0.1));
     ship->setPosition(sf::Vector2f(200, 200));
     ship->setScale(sf::Vector2f(0.5, 0.5));
 
-    Emitter *emitter = new Emitter(100.f, 100.f, 20, 60.f, 120.f, 2.f, 4.f, 1.f, 2.f, 100.f);
+    auto shipDust = unique_ptr<Emitter>(new Emitter(
+        ship->getPosition().x,
+        ship->getPosition().y,
+        60.f, 120.f, 2.f, 4.f,
+        4, 7, 100.f));
 
     while (window.isOpen())
     {
@@ -105,18 +110,22 @@ int main()
             ship->setPosition(sf::Vector2f(ship->getPosition().x, 0));
 
         ship->update();
-        emitter->update();
+        if (ship->hasThrust())
+            shipDust->addFuel(1);
+
+        shipDust->update();
+        shipDust->setMinAngle(ship->getRotation() + 180 - 10.f);
+        shipDust->setMaxAngle(ship->getRotation() + 180 + 10.f);
+        shipDust->setPosition(ship->getPosition());
 
         //====== draw =========
         window.clear();
 
+        window.draw(*shipDust);
         window.draw(*ship);
-        window.draw(*emitter);
 
         window.display();
     }
-
-    delete emitter;
 
     return EXIT_SUCCESS;
 }

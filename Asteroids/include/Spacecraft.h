@@ -14,6 +14,7 @@ protected:
     float _turnRate;
     float _friction;
     float _acceleration;
+    float _hasThrust;
 
 public:
     Spacecraft(
@@ -23,6 +24,7 @@ public:
         float friction,
         float acceleration);
     virtual ~Spacecraft();
+    virtual bool hasThrust();
     virtual void update();
     virtual void thrust();
     virtual void reverseThrust();

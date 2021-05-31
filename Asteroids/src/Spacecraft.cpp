@@ -15,6 +15,7 @@ Spacecraft::Spacecraft(
     _turnRate = turnRate;
     _friction = friction;
     _acceleration = acceleration;
+    _hasThrust = false;
 
     _velocity =
         sf::Vector2f(0, 0);
@@ -34,12 +35,18 @@ Spacecraft::~Spacecraft()
     //
 }
 
+bool Spacecraft::hasThrust()
+{
+    return _hasThrust;
+}
+
 void Spacecraft::thrust()
 {
     _engThr.x = cos(getRotation() * PI / 180) * _acceleration;
     _engThr.y = sin(getRotation() * PI / 180) * _acceleration;
     _engRev.x = 1;
     _engRev.y = 1;
+    _hasThrust = true;
 }
 
 void Spacecraft::reverseThrust()
@@ -48,6 +55,7 @@ void Spacecraft::reverseThrust()
     _engThr.y = 0;
     _engRev.x = _friction;
     _engRev.y = _friction;
+    _hasThrust = false;
 }
 
 void Spacecraft::turnLeft()

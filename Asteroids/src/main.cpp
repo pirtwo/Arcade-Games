@@ -1,8 +1,10 @@
 #include <SFML/Graphics.hpp>
+#include <map>
 #include <vector>
 #include <memory>
 #include "Spacecraft.h"
 #include "Particle.h"
+#include "Projectile.h"
 
 using namespace std;
 
@@ -20,23 +22,31 @@ struct Key
         isDown = false;
         isUp = true;
     }
-} upArrow, leftArrow, rightArrow;
+} upArrow, leftArrow, rightArrow, spacebar;
 
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(800, 700), "Asteroids");
     window.setFramerateLimit(60);
 
-    vector<shared_ptr<sf::Texture>> textures;
-    textures.push_back(shared_ptr<sf::Texture>(new sf::Texture));
+    //======== load assets =========
+    map<string, shared_ptr<sf::Texture>> textures;
+    textures["ship"] =
+        shared_ptr<sf::Texture>(new sf::Texture);
+    textures["greenLaser"] =
+        shared_ptr<sf::Texture>(new sf::Texture);
 
-    if (!textures[0]->loadFromFile("./assets/ship_01.png"))
+    if (!textures["ship"]->loadFromFile("./assets/ship_01.png") ||
+        !textures["greenLaser"]->loadFromFile("./assets/laserGreen.png"))
     {
         return EXIT_FAILURE;
     }
 
+    //========= initialize ==========
+
+    // player spacecraft
     auto ship = unique_ptr<Spacecraft>(
-        new Spacecraft(*textures[0], 5.0, 4.5, 0.99, 0.1));
+        new Spacecraft(*textures["ship"], 5.0, 4.5, 0.99, 0.1));
     ship->setPosition(sf::Vector2f(200, 200));
     ship->setScale(sf::Vector2f(0.5, 0.5));
 
@@ -46,6 +56,20 @@ int main()
         60.f, 120.f, 2.f, 4.f,
         4, 7, 100.f));
 
+    // projectiles list
+    list<unique_ptr<Projectile>> projs;
+
+    auto spacecraftFire = [&]()
+    {
+        auto p = unique_ptr<Projectile>(new Projectile(
+            *textures["greenLaser"], 7.5, ship->getRotation(), 500));
+        p->setPosition(ship->getPosition());
+        p->setRotation(ship->getRotation());
+        p->setScale(0.5, 0.5);
+        projs.push_back(std::move(p));
+    };
+
+    //=========== game loop ============
     while (window.isOpen())
     {
         sf::Event e;
@@ -68,6 +92,9 @@ int main()
                 case sf::Keyboard::Key::Right:
                     rightArrow.press();
                     break;
+                case sf::Keyboard::Key::Space:
+                    spacebar.press();
+                    break;
                 default:
                     break;
                 }
@@ -84,6 +111,12 @@ int main()
                     break;
                 case sf::Keyboard::Key::Right:
                     rightArrow.release();
+                    break;
+                case sf::Keyboard::Key::Space:
+                    spacecraftFire();
+                    spacebar.release();
+                    break;
+                default:
                     break;
                 }
             }
@@ -118,11 +151,28 @@ int main()
         shipDust->setMaxAngle(ship->getRotation() + 180 + 10.f);
         shipDust->setPosition(ship->getPosition());
 
+        // update projectiles
+        for (auto i = projs.begin(); i != projs.end(); i++)
+        {
+            auto proj = i->get();
+            proj->update();
+            if (proj->isBeyondRange())
+            {
+                i = projs.erase(i);
+                if (i == projs.end())
+                    break;
+            }
+        }
+
         //====== draw =========
         window.clear();
 
         window.draw(*shipDust);
         window.draw(*ship);
+
+        // draw projectiles
+        for (auto i = projs.begin(); i != projs.end(); i++)
+            window.draw(*i->get());
 
         window.display();
     }

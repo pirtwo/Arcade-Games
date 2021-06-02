@@ -15,6 +15,6 @@ struct Keyboard
         isDown = false;
         isUp = true;
     }
-}
+};
 
 #endif

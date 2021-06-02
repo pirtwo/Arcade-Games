@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <stdlib.h>
 #include <map>
 #include <vector>
 #include <memory>
@@ -43,6 +44,8 @@ int main()
     }
 
     //========= initialize ==========
+
+    srand(time(NULL));
 
     // player spacecraft
     auto ship = unique_ptr<Spacecraft>(

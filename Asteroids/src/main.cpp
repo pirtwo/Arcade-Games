@@ -6,24 +6,9 @@
 #include "Spacecraft.h"
 #include "Particle.h"
 #include "Projectile.h"
+#include "Keyboard.h"
 
 using namespace std;
-
-struct Key
-{
-    bool isDown = false;
-    bool isUp = true;
-    void press()
-    {
-        isDown = true;
-        isUp = false;
-    }
-    void release()
-    {
-        isDown = false;
-        isUp = true;
-    }
-} upArrow, leftArrow, rightArrow, spacebar;
 
 int main()
 {
@@ -46,6 +31,8 @@ int main()
     //========= initialize ==========
 
     srand(time(NULL));
+
+    Keyboard upArrow, leftArrow, rightArrow, spacebar;
 
     // player spacecraft
     auto ship = unique_ptr<Spacecraft>(

@@ -23,14 +23,14 @@ public:
         float turnRate,
         float friction,
         float acceleration);
-    virtual ~Spacecraft();
-    virtual bool hasThrust();
-    virtual void update();
-    virtual void thrust();
-    virtual void reverseThrust();
-    virtual void turnLeft();
-    virtual void turnRight();
-    virtual void draw(
+    ~Spacecraft();
+    bool hasThrust();
+    void update();
+    void thrust();
+    void reverseThrust();
+    void turnLeft();
+    void turnRight();
+    void draw(
         sf::RenderTarget &target,
         sf::RenderStates states) const;
 };

@@ -20,7 +20,7 @@ public:
         float angle);
     ~Asteroid();
     void update();
-    virtual void draw(
+    void draw(
         sf::RenderTarget &target,
         sf::RenderStates states) const;
 };

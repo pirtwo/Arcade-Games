@@ -60,12 +60,12 @@ public:
         int minFade,
         int maxFade,
         float boundRadius);
-    virtual void update();
-    virtual void addFuel(int n);
-    virtual void setMinAngle(float value);
-    virtual void setMaxAngle(float value);
-    virtual void setPosition(sf::Vector2f value);
-    virtual void draw(sf::RenderTarget &target, sf::RenderStates states) const;
+    void update();
+    void addFuel(int n);
+    void setMinAngle(float value);
+    void setMaxAngle(float value);
+    void setPosition(sf::Vector2f value);
+    void draw(sf::RenderTarget &target, sf::RenderStates states) const;
 };
 
 #endif

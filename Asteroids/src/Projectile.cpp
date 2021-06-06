@@ -15,7 +15,7 @@ Projectile::Projectile(
     _velocity.x = cos(degreeToRadian(_angle)) * speed;
     _velocity.y = sin(degreeToRadian(_angle)) * speed;
     _traveledDist = 0;
-    _sp = sf::Sprite(texture);
+    setTexture(texture);
 }
 
 Projectile::~Projectile()
@@ -28,13 +28,18 @@ bool Projectile::isBeyondRange()
     return _traveledDist > _range;
 }
 
+int Projectile::getActor()
+{
+    return _actor;
+}
+
+void Projectile::setActor(int actor)
+{
+    _actor = actor;
+}
+
 void Projectile::update()
 {
     _traveledDist += _speed;
     move(_velocity);
-}
-
-void Projectile::draw(sf::RenderTarget &target, sf::RenderStates states) const
-{
-    target.draw(_sp, getTransform());
 }

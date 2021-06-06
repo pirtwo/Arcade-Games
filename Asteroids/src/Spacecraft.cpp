@@ -9,7 +9,7 @@ Spacecraft::Spacecraft(
     float maxSpeed,
     float turnRate,
     float friction,
-    float acceleration)
+    float acceleration) : sf::Sprite()
 {
     _maxSpeed = maxSpeed;
     _turnRate = turnRate;
@@ -24,10 +24,8 @@ Spacecraft::Spacecraft(
     _engRev =
         sf::Vector2f(1, 1);
 
-    _sp = sf::Sprite(texture);
-    _sp.setOrigin(sf::Vector2f(
-        _sp.getGlobalBounds().width / 2,
-        _sp.getGlobalBounds().height / 2));
+    setTexture(texture);
+    setOrigin(getGlobalBounds().width / 2, getGlobalBounds().height / 2);
 }
 
 Spacecraft::~Spacecraft()
@@ -86,9 +84,4 @@ void Spacecraft::update()
     _velocity.y *= _engRev.y;
 
     move(_velocity.x, _velocity.y);
-}
-
-void Spacecraft::draw(sf::RenderTarget &target, sf::RenderStates states) const
-{
-    target.draw(_sp, getTransform());
 }

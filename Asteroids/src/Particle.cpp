@@ -14,8 +14,7 @@ Emitter::Emitter(
     float minSpeed,
     float maxSpeed,
     int minFade,
-    int maxFade,
-    float boundRadius)
+    int maxFade)
 {
     _x = x;
     _y = y;
@@ -25,7 +24,11 @@ Emitter::Emitter(
     _maxSpeed = maxSpeed;
     _minFade = minFade;
     _maxFade = maxFade;
-    _boundRadius = boundRadius;
+}
+
+int Emitter::getFule()
+{
+    return _fuel;
 }
 
 void Emitter::addFuel(int n)

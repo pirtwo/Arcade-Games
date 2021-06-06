@@ -3,26 +3,27 @@
 
 #include <SFML/Graphics.hpp>
 
-class Asteroid : public sf::Drawable, public sf::Transformable
+class Asteroid : public sf::Sprite
 {
 protected:
     sf::Vector2f _velocity;
-    sf::Sprite _sp;
-    float _radius;
+    int _hp;
+    int _maxHP;
     float _speed;
     float _angle;
 
 public:
     Asteroid(
         sf::Texture &texture,
-        float radius,
+        int maxHP,
         float speed,
         float angle);
     ~Asteroid();
+    int getHP();
+    int getMaxHP();
+    float getAngle();
+    void takeHit();
     void update();
-    void draw(
-        sf::RenderTarget &target,
-        sf::RenderStates states) const;
 };
 
 #endif

@@ -3,15 +3,15 @@
 
 #include <SFML/Graphics.hpp>
 
-class Projectile : public sf::Drawable, public sf::Transformable
+class Projectile : public sf::Sprite
 {
 protected:
-    sf::Sprite _sp;
     sf::Vector2f _velocity;
     float _speed;
     float _angle;
     float _range;
     float _traveledDist;
+    int _actor;
 
 public:
     Projectile(
@@ -21,10 +21,9 @@ public:
         float range);
     ~Projectile();
     bool isBeyondRange();
+    int getActor();
+    void setActor(int actor);
     void update();
-    void draw(
-        sf::RenderTarget &target,
-        sf::RenderStates states) const;
 };
 
 #endif

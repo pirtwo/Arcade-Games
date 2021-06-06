@@ -46,7 +46,6 @@ protected:
     float _maxSpeed;
     int _minFade;
     int _maxFade;
-    float _boundRadius;
     list<unique_ptr<Particle>> _particles;
 
 public:
@@ -58,9 +57,9 @@ public:
         float minSpeed,
         float maxSpeed,
         int minFade,
-        int maxFade,
-        float boundRadius);
+        int maxFade);
     void update();
+    int getFule();
     void addFuel(int n);
     void setMinAngle(float value);
     void setMaxAngle(float value);

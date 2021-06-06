@@ -3,10 +3,9 @@
 
 #include <SFML/Graphics.hpp>
 
-class Spacecraft : public sf::Drawable, public sf::Transformable
+class Spacecraft : public sf::Sprite
 {
 protected:
-    sf::Sprite _sp;
     sf::Vector2f _velocity;
     sf::Vector2f _engRev;
     sf::Vector2f _engThr;
@@ -15,6 +14,7 @@ protected:
     float _friction;
     float _acceleration;
     float _hasThrust;
+    int _actor;
 
 public:
     Spacecraft(
@@ -24,15 +24,14 @@ public:
         float friction,
         float acceleration);
     ~Spacecraft();
+    int getActor();
+    void setActor(int actor);
     bool hasThrust();
     void update();
     void thrust();
     void reverseThrust();
     void turnLeft();
     void turnRight();
-    void draw(
-        sf::RenderTarget &target,
-        sf::RenderStates states) const;
 };
 
 #endif

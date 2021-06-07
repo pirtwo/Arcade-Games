@@ -33,6 +33,16 @@ Spacecraft::~Spacecraft()
     //
 }
 
+int Spacecraft::getActor()
+{
+    return _actor;
+}
+
+void Spacecraft::setActor(int actor)
+{
+    _actor = actor;
+}
+
 bool Spacecraft::hasThrust()
 {
     return _hasThrust;

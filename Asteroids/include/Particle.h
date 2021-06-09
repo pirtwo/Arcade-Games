@@ -4,7 +4,6 @@
 #include <SFML/Graphics.hpp>
 #include <list>
 #include <memory>
-#include <iostream>
 
 using namespace std;
 
@@ -24,7 +23,7 @@ public:
 
     ~Particle()
     {
-        cout << "~Particle \r\n";
+        //
     }
 
     void draw(sf::RenderTarget &target, sf::RenderStates states) const

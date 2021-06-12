@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-const float PI = 3.14;
+constexpr float PI = 3.14159;
 
 int randInt(int m, int n)
 {

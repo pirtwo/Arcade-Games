@@ -1,6 +1,5 @@
 #include "Projectile.h"
 #include "Helper.h"
-#include <iostream>
 #include <math.h>
 
 Projectile::Projectile(
@@ -20,7 +19,7 @@ Projectile::Projectile(
 
 Projectile::~Projectile()
 {
-    std::cout << "~Projectile\r\n";
+    //
 }
 
 bool Projectile::isBeyondRange()

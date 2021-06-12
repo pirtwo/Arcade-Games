@@ -2,7 +2,6 @@
 #include "Helper.h"
 #include <SFML/Graphics.hpp>
 #include <math.h>
-#include <iostream>
 
 Asteroid::Asteroid(sf::Texture &texture, int maxHP, float speed, float angle)
 {
@@ -18,7 +17,7 @@ Asteroid::Asteroid(sf::Texture &texture, int maxHP, float speed, float angle)
 
 Asteroid::~Asteroid()
 {
-    std::cout << "~Asteroid\r\n";
+    //
 }
 
 void Asteroid::takeHit()

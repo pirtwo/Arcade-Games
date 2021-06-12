@@ -22,16 +22,27 @@ enum Actor
 struct Settings
 {
     const int MaxAstroidNum = 5;
-    const int RateOfFire = 400; // bullet per ms
+    const int PlayerRateOfFire = 400;
+    const int PlayerSpawnDelayMS = 1000;
+    const int EnemyRateOfFire = 400;
+    const int EnemySpawnRateMS = 10000;
+    const float EnemySpeedMin = 1.f;
+    const float EnemySpeedMax = 2.f;
 } settings;
 
 struct State
 {
     bool pause = false;
     bool gameover = true;
-    bool help = false;
-    int score = 0;
+    bool showHelp = false;
+    bool hasEnemySpawn = false;
+    bool hasPlayerSpawn = false;
     int hp = 3;
+    int score = 0;
+    int lastPlayerFireMS = 0;
+    int lastPlayerSpawnMS = 0;
+    int lastEnemyFireMS = 0;
+    int lastEnemySpawnMS = 0;
 } state;
 
 void keepInWindow(sf::Transformable &item, sf::RenderWindow &window);
@@ -46,7 +57,11 @@ int main()
     sf::Font font;
 
     map<string, shared_ptr<sf::Texture>> textures;
-    textures["ship"] =
+    textures["playerShip"] =
+        shared_ptr<sf::Texture>(new sf::Texture);
+    textures["enemyShip"] =
+        shared_ptr<sf::Texture>(new sf::Texture);
+    textures["redLaser"] =
         shared_ptr<sf::Texture>(new sf::Texture);
     textures["greenLaser"] =
         shared_ptr<sf::Texture>(new sf::Texture);
@@ -60,7 +75,9 @@ int main()
         shared_ptr<sf::Texture>(new sf::Texture);
 
     if (!font.loadFromFile("./assets/kenvector_future.ttf") ||
-        !textures["ship"]->loadFromFile("./assets/ship_01.png") ||
+        !textures["playerShip"]->loadFromFile("./assets/ship_01.png") ||
+        !textures["enemyShip"]->loadFromFile("./assets/enemy_01.png") ||
+        !textures["redLaser"]->loadFromFile("./assets/laserRed.png") ||
         !textures["greenLaser"]->loadFromFile("./assets/laserGreen.png") ||
         !textures["asteroid_01"]->loadFromFile("./assets/meteor_01.png") ||
         !textures["asteroid_02"]->loadFromFile("./assets/meteor_02.png") ||
@@ -75,6 +92,7 @@ int main()
     srand(time(NULL));
 
     sf::Clock clock;
+    float elapsed = 0;
 
     Keyboard upArrow, leftArrow, rightArrow, spacebar;
 
@@ -154,25 +172,27 @@ int main()
         window.getSize().x / 2 - helpText.getGlobalBounds().width / 2,
         window.getSize().y - helpText.getGlobalBounds().height - 30);
 
-    auto spawnPlayer =
-        [&](float x, float y)
+    auto spawnSpacecraft =
+        [&](int actor, float x, float y)
     {
         auto elm = unique_ptr<Spacecraft>(
-            new Spacecraft(*textures["ship"], 5.0, 4.5, 0.99, 0.1));
-        elm->setActor(Actor::PLAYER);
+            new Spacecraft(
+                actor == Actor::PLAYER ? *textures["playerShip"] : *textures["enemyShip"], 5.0, 4.5, 0.99, 0.1));
+        elm->setActor(actor);
         elm->setScale(sf::Vector2f(0.5, 0.5));
         elm->setPosition(sf::Vector2f(x, y));
         spacecrafts.push_back(std::move(elm));
     };
 
     auto spacecraftFire =
-        [&](Spacecraft &s)
+        [&](Spacecraft &s, float angle)
     {
         auto p = unique_ptr<Projectile>(new Projectile(
-            *textures["greenLaser"], 7.5, s.getRotation(), 500));
+            s.getActor() == Actor::PLAYER ? *textures["greenLaser"] : *textures["redLaser"],
+            7.5, angle, 500));
         p->setActor(s.getActor());
         p->setPosition(s.getPosition());
-        p->setRotation(s.getRotation());
+        p->setRotation(angle);
         p->setScale(0.5, 0.5);
         projectiles.push_back(std::move(p));
     };
@@ -261,18 +281,34 @@ int main()
 
     auto newgame = [&]()
     {
-        state.pause = false;
-        state.gameover = false;
+        clock.restart();
+
         state.hp = 3;
         state.score = 0;
+        state.pause = false;
+        state.gameover = false;
+
+        state.hasPlayerSpawn = false;
+        state.lastPlayerFireMS = 0;
+
+        state.hasEnemySpawn = false;
+        state.lastEnemyFireMS = 0;
+        state.lastEnemySpawnMS = 0;
 
         spacecrafts.clear();
         projectiles.clear();
         asteroids.clear();
         effects.clear();
-        spawnPlayer(
+        spawnSpacecraft(
+            Actor::PLAYER,
             window.getSize().x / 2,
             window.getSize().y / 2);
+    };
+
+    auto respawn = [&]()
+    {
+        auto spawnArea = findEmptyArea(300, 300);
+        spawnSpacecraft(Actor::PLAYER, spawnArea.x + 150, spawnArea.y + 150);
     };
 
     //=========== game loop ============//
@@ -326,7 +362,7 @@ int main()
                         state.pause = !state.pause;
                     break;
                 case sf::Keyboard::Key::H:
-                    state.help = !state.help;
+                    state.showHelp = !state.showHelp;
                     break;
                 case sf::Keyboard::Key::N:
                     newgame();
@@ -341,6 +377,8 @@ int main()
 
         if (!state.pause)
         {
+            elapsed = clock.getElapsedTime().asMilliseconds();
+
             snprintf(playerScore, 20, "score: %d", state.score);
             scoreText.setString(playerScore);
 
@@ -352,44 +390,72 @@ int main()
                 state.hp == 3 ? "|||" : "");
             hpText.setString(playerHP);
 
+            // check for enemy spawn
+            if (!state.gameover)
+            {
+                state.hasEnemySpawn = elapsed >
+                                      state.lastEnemySpawnMS + settings.EnemySpawnRateMS;
+            }
+            if (state.hasEnemySpawn)
+            {
+                spawnSpacecraft(Actor::CPU, 0, randFloat(0, window.getSize().y));
+                state.lastEnemySpawnMS = elapsed;
+            }
+
+            // spawn player
+            if (state.hasPlayerSpawn && elapsed >
+                                            state.lastPlayerSpawnMS + settings.PlayerSpawnDelayMS)
+            {
+                auto spawnArea = findEmptyArea(300, 300);
+                spawnSpacecraft(Actor::PLAYER, spawnArea.x + 150, spawnArea.y + 150);
+                state.hasPlayerSpawn = false;
+            }
+
             // update spacecrafts
             for (auto i = spacecrafts.begin(); i != spacecrafts.end(); i++)
             {
-                auto elm = i->get();
-                elm->update();
-                keepInWindow(*elm, window);
+                auto s = i->get();
+                s->update();
+                keepInWindow(*s, window);
 
                 // spawn thrust dust
-                if (elm->hasThrust())
+                if (s->hasThrust())
                     spawnDust(
                         2,
-                        elm->getPosition().x,
-                        elm->getPosition().y,
-                        elm->getRotation() + 180 - 10.f,
-                        elm->getRotation() + 180 + 10.f,
+                        s->getPosition().x,
+                        s->getPosition().y,
+                        s->getRotation() + 180 - 10.f,
+                        s->getRotation() + 180 + 10.f,
                         1.f, 4.f,
                         5, 7);
 
-                if (elm->getActor() == Actor::PLAYER)
+                if (s->getActor() == Actor::PLAYER)
                 {
                     if (upArrow.isDown)
-                        elm->thrust();
+                        s->thrust();
                     if (upArrow.isUp)
-                        elm->reverseThrust();
+                        s->reverseThrust();
                     if (leftArrow.isDown)
-                        elm->turnLeft();
+                        s->turnLeft();
                     if (rightArrow.isDown)
-                        elm->turnRight();
+                        s->turnRight();
                     if (spacebar.isDown &&
-                        clock.getElapsedTime().asMilliseconds() > settings.RateOfFire)
+                        elapsed - state.lastPlayerFireMS > settings.PlayerRateOfFire)
                     {
-                        clock.restart();
-                        spacecraftFire(*elm);
+                        state.lastPlayerFireMS = elapsed;
+                        spacecraftFire(*s, s->getRotation());
                     }
                 }
                 else
                 {
-                    // update cpu spacecrafts
+                    s->thrust();
+                    if (elapsed -
+                            state.lastEnemyFireMS >
+                        settings.EnemyRateOfFire)
+                    {
+                        state.lastEnemyFireMS = elapsed;
+                        spacecraftFire(*s, randFloat(0.f, 360.f));
+                    }
                 }
             }
 
@@ -413,11 +479,13 @@ int main()
             // update projectiles
             for (auto i = projectiles.begin(); i != projectiles.end(); i++)
             {
-                auto elm = i->get();
-                elm->update();
-                keepInWindow(*elm, window);
+                auto p = i->get();
+                p->update();
 
-                if (elm->isBeyondRange())
+                if (p->getActor() == Actor::PLAYER)
+                    keepInWindow(*p, window);
+
+                if (p->isBeyondRange())
                 {
                     i = projectiles.erase(i);
                     if (i == projectiles.end())
@@ -428,9 +496,9 @@ int main()
             // update effects
             for (auto i = effects.begin(); i != effects.end(); i++)
             {
-                auto elm = i->get();
-                elm->update();
-                if (elm->getFule() <= 0)
+                auto e = i->get();
+                e->update();
+                if (e->getFule() <= 0)
                 {
                     i = effects.erase(i);
                     if (i == effects.end())
@@ -480,7 +548,9 @@ int main()
                                 a->getMaxHP() - 1);
                         }
 
-                        if (a->getHP() <= 0 && a->getMaxHP() == 1)
+                        if (p->getActor() == Actor::PLAYER &&
+                            a->getHP() <= 0 &&
+                            a->getMaxHP() == 1)
                         {
                             state.score += 10;
                         }
@@ -501,37 +571,87 @@ int main()
                 }
             }
 
-            // check asteroids collision
-            for (auto i = asteroids.begin(); i != asteroids.end(); i++)
+            // check projectile collision
+            for (auto i = projectiles.begin(); i != projectiles.end(); i++)
             {
-                auto elm = i->get();
+                auto p = i->get();
+                bool hasCollision = false;
 
                 for (auto j = spacecrafts.begin(); j != spacecrafts.end(); j++)
                 {
-                    auto sc = j->get();
-                    if (checkCollision(*sc, *elm))
+                    auto s = j->get();
+                    if (s->getActor() == p->getActor())
+                        continue;
+                    if (checkCollision(*s, *p))
+                    {
+                        spawnDust(
+                            10,
+                            p->getPosition().x,
+                            p->getPosition().y,
+                            0.f, 360.f,
+                            1.f, 2.f,
+                            5, 7);
+
+                        if (s->getActor() == Actor::PLAYER)
+                        {
+                            state.hp--;
+                            if (state.hp == 0)
+                                gameover();
+                            else
+                            {
+
+                                state.lastPlayerSpawnMS = elapsed;
+                                state.hasPlayerSpawn = true;
+                            }
+                        }
+                        else
+                        {
+                            state.score += 50;
+                        }
+
+                        spacecrafts.erase(j);
+                        hasCollision = true;
+                        break;
+                    }
+                }
+
+                if (hasCollision)
+                {
+                    i = projectiles.erase(i);
+                    if (i == projectiles.end())
+                        break;
+                }
+            }
+
+            // check asteroids collision
+            for (auto i = asteroids.begin(); i != asteroids.end(); i++)
+            {
+                auto a = i->get();
+
+                for (auto j = spacecrafts.begin(); j != spacecrafts.end(); j++)
+                {
+                    auto s = j->get();
+                    if (checkCollision(*s, *a))
                     {
                         // TODO: play crash sound
 
                         spawnDust(
                             20,
-                            sc->getPosition().x,
-                            sc->getPosition().y,
+                            s->getPosition().x,
+                            s->getPosition().y,
                             0.f, 360.f,
                             1.f, 2.f,
                             3, 5);
 
-                        if (sc->getActor() == Actor::PLAYER)
+                        if (s->getActor() == Actor::PLAYER)
                         {
                             state.hp--;
                             if (state.hp == 0)
-                            {
                                 gameover();
-                            }
                             else
                             {
-                                auto spawnArea = findEmptyArea(300, 300);
-                                spawnPlayer(spawnArea.x + 150, spawnArea.y + 150);
+                                state.lastPlayerSpawnMS = elapsed;
+                                state.hasPlayerSpawn = true;
                             }
                         }
 
@@ -549,16 +669,16 @@ int main()
         //=========== draw ==========//
         window.clear();
 
-        for (auto i = spacecrafts.begin(); i != spacecrafts.end(); i++)
-            window.draw(*i->get());
-
-        for (auto i = asteroids.begin(); i != asteroids.end(); i++)
+        for (auto i = effects.begin(); i != effects.end(); i++)
             window.draw(*i->get());
 
         for (auto i = projectiles.begin(); i != projectiles.end(); i++)
             window.draw(*i->get());
 
-        for (auto i = effects.begin(); i != effects.end(); i++)
+        for (auto i = asteroids.begin(); i != asteroids.end(); i++)
+            window.draw(*i->get());
+
+        for (auto i = spacecrafts.begin(); i != spacecrafts.end(); i++)
             window.draw(*i->get());
 
         if (state.pause)
@@ -566,7 +686,7 @@ int main()
             window.draw(titleText);
             window.draw(pauseText);
         }
-        if (state.help)
+        if (state.showHelp)
         {
             window.draw(helpText);
         }

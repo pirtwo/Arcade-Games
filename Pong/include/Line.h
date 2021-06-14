@@ -6,7 +6,7 @@
 class Line : public sf::Drawable
 {
 protected:
-    std::vector<std::unique_ptr<sf::RectangleShape>> _segments;
+    std::vector<sf::RectangleShape> _segments;
 
 public:
     Line(

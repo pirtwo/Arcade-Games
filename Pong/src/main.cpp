@@ -9,15 +9,17 @@
 struct Config
 {
     int laneThickness = 10;
+    sf::Color laneColor = sf::Color(155, 155, 155, 255);
     float ballSize = 17.f;
     float ballMinSpeed = 5.f;
     float ballMaxSpeed = 11.5f;
-    sf::Color ballColor = sf::Color::Yellow;
+    sf::Color ballColor = sf::Color::Red;
     float paddleSpeed = 8.5;
     float paddleWid = 12.f;
     float paddleHig = 85.f;
     float paddleMargin = 20.f;
-    sf::Color paddleColor = sf::Color::Blue;
+    sf::Color paddleColor = sf::Color(216, 216, 216, 255);
+    sf::Color scoreColor = sf::Color(155, 155, 155, 255);
 } config;
 
 struct Key
@@ -75,15 +77,15 @@ int main()
     auto toplane = std::unique_ptr<Line>(new Line(
         sf::Vector2f(0, 0),
         sf::Vector2f(window.getSize().x, 0),
-        config.laneThickness, sf::Color::Red));
+        config.laneThickness, config.laneColor));
     auto midlane = std::unique_ptr<Line>(new Line(
         sf::Vector2f(window.getSize().x / 2 + config.laneThickness / 2.f, 0),
         sf::Vector2f(window.getSize().x / 2 + config.laneThickness / 2.f, window.getSize().y),
-        15, 35.f, config.laneThickness, sf::Color::Red));
+        15, 35.f, config.laneThickness, config.laneColor));
     auto botlane = std::unique_ptr<Line>(new Line(
         sf::Vector2f(0, window.getSize().y - config.laneThickness),
         sf::Vector2f(window.getSize().x, window.getSize().y - config.laneThickness),
-        config.laneThickness, sf::Color::Red));
+        config.laneThickness, config.laneColor));
 
     sf::FloatRect fieldBounds[4] = {
         // top lane
@@ -115,7 +117,7 @@ int main()
     char score[20];
     sf::Text scoreTxt;
     scoreTxt.setFont(font);
-    scoreTxt.setFillColor(sf::Color::White);
+    scoreTxt.setFillColor(config.scoreColor);
     scoreTxt.setCharacterSize(35);
     scoreTxt.setString("0     0");
     scoreTxt.setPosition(

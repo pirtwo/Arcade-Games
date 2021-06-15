@@ -16,6 +16,7 @@ public:
 public:
     Paddle(float w, float h, sf::Color color);
     ~Paddle();
+    sf::FloatRect getBody();
     void moveUp();
     void moveDown();
     void stop();

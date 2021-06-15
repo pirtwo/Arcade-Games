@@ -12,6 +12,15 @@ Paddle::~Paddle()
     //
 }
 
+sf::FloatRect Paddle::getBody()
+{
+    return sf::FloatRect(
+        getPosition().x,
+        getPosition().y,
+        _sp.getGlobalBounds().width,
+        _sp.getGlobalBounds().height);
+}
+
 void Paddle::moveUp()
 {
     velocity.y = -speed;

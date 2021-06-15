@@ -42,7 +42,13 @@ int main()
     sf::RenderWindow window(sf::VideoMode(800, 500), "Pong");
     window.setFramerateLimit(60);
 
+    sf::Font font;
+
     //========== load assets ===========//
+    if (!font.loadFromFile("./assets/OpenSans-Bold.ttf"))
+    {
+        return EXIT_FAILURE;
+    }
 
     //========== initialize ===========//
     srand(time(0));
@@ -105,6 +111,15 @@ int main()
             config.laneThickness,
             window.getSize().y),
     };
+
+    char score[20];
+    sf::Text scoreTxt;
+    scoreTxt.setFont(font);
+    scoreTxt.setFillColor(sf::Color::White);
+    scoreTxt.setCharacterSize(35);
+    scoreTxt.setString("0     0");
+    scoreTxt.setPosition(
+        window.getSize().x / 2 - scoreTxt.getGlobalBounds().width / 2, 20);
 
     auto kickoff = [&]()
     {
@@ -258,18 +273,26 @@ int main()
         }
         else if (checkCollision(ball->getBody(), fieldBounds[2]))
         {
+            state.playerTwoScore++;
             kickoff();
         }
         else if (checkCollision(ball->getBody(), fieldBounds[3]))
         {
+            state.playerOneScore++;
             kickoff();
         }
+
+        snprintf(score, 20, "%d\t\t%d", state.playerOneScore, state.playerTwoScore);
+        scoreTxt.setString(score);
+        scoreTxt.setPosition(
+            window.getSize().x / 2 - scoreTxt.getGlobalBounds().width / 2, 20);
 
         //========== draw   ===========//
         window.clear();
         window.draw(*toplane);
         window.draw(*midlane);
         window.draw(*botlane);
+        window.draw(scoreTxt);
         window.draw(*lPaddle);
         window.draw(*rPaddle);
         window.draw(*ball);

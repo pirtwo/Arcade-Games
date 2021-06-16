@@ -2,42 +2,17 @@
 #include <iostream>
 #include <stdlib.h>
 #include <memory>
+#include "State.h"
+#include "Config.h"
+#include "Keyboard.h"
 #include "Line.h"
 #include "Ball.h"
 #include "Paddle.h"
+#include "helper.h"
 
-struct Config
-{
-    int laneThickness = 10;
-    sf::Color laneColor = sf::Color(155, 155, 155, 255);
-    float ballSize = 17.f;
-    float ballMinSpeed = 5.f;
-    float ballMaxSpeed = 11.5f;
-    sf::Color ballColor = sf::Color::Red;
-    float paddleSpeed = 8.5;
-    float paddleWid = 12.f;
-    float paddleHig = 85.f;
-    float paddleMargin = 20.f;
-    sf::Color paddleColor = sf::Color(216, 216, 216, 255);
-    sf::Color scoreColor = sf::Color(155, 155, 155, 255);
-} config;
-
-struct Key
-{
-    bool isDown = false;
-} wKey, sKey, upKey, downKey;
-
-struct State
-{
-    int playerOneScore = 0;
-    int playerTwoScore = 0;
-    bool hasKickoff = false;
-    bool ballTouched = false;
-} state;
-
-float randFloat(float n, float m);
-void limitPaddleMove(Paddle &paddle, float minY, float maxY);
-bool checkCollision(sf::FloatRect a, sf::FloatRect b);
+State state;
+Config config;
+Keyboard wKey, sKey, upKey, downKey;
 
 int main()
 {
@@ -302,36 +277,4 @@ int main()
     }
 
     return EXIT_SUCCESS;
-}
-
-void limitPaddleMove(Paddle &paddle, float minY, float maxY)
-{
-    if (paddle.getPosition().y < minY)
-        paddle.setPosition(paddle.getPosition().x, minY);
-
-    if (paddle.getPosition().y > maxY)
-        paddle.setPosition(paddle.getPosition().x, maxY);
-}
-
-bool checkCollision(sf::FloatRect a, sf::FloatRect b)
-{
-    bool overlapX = false;
-    bool overlapY = false;
-
-    if (a.left < b.left)
-        overlapX = b.left - a.left < a.width;
-    else
-        overlapX = a.left - b.left < b.width;
-
-    if (a.top < b.top)
-        overlapY = b.top - a.top < a.height;
-    else
-        overlapY = a.top - b.top < b.height;
-
-    return overlapX && overlapY;
-}
-
-float randFloat(float n, float m)
-{
-    return n + (m - n) * (rand() / (RAND_MAX + 1.f));
 }

@@ -1,11 +1,22 @@
-#include <iostream>
-
-using namespace std;
+#include <SFML/Graphics.hpp>
+#include "Particle.h"
 
 int main()
 {
+    sf::RenderWindow window(sf::VideoMode(700, 500), "SFML - Particle System");
+    window.setFramerateLimit(60);
 
-    /* write your code here */
+    while (window.isOpen())
+    {
+        sf::Event e;
+        while (window.pollEvent(e))
+        {
+            if (e.type == sf::Event::Closed)
+                window.close();
+        }
 
-    return 0;
+        window.clear();
+
+        window.display();
+    }
 }

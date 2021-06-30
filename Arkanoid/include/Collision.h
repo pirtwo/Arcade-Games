@@ -7,14 +7,8 @@
     axis aligned bounding box collision detection
 */
 bool AABB(
-    float ax,
-    float ay,
-    float aWidth,
-    float aHeight,
-    float bx,
-    float by,
-    float bWidth,
-    float bHeight);
+    sf::Vector2f aPos, sf::Vector2f aDim,
+    sf::Vector2f bPos, sf::Vector2f bDim);
 
 /*
     returns the result of collision of the ray against 

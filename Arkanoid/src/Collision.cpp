@@ -2,19 +2,13 @@
 #include <SFML/Graphics.hpp>
 
 bool AABB(
-    float ax,
-    float ay,
-    float aWidth,
-    float aHeight,
-    float bx,
-    float by,
-    float bWidth,
-    float bHeight)
+    sf::Vector2f aPos, sf::Vector2f aDim,
+    sf::Vector2f bPos, sf::Vector2f bDim)
 {
-    return ((ax < bx && bx < ax + aWidth) ||
-            (ax > bx && ax < bx + bWidth)) &&
-           ((ay < by && by < ay + aHeight) ||
-            (ay > by && ay < by + bHeight));
+    return ((aPos.x < bPos.x && bPos.x < aPos.x + aDim.x) ||
+            (aPos.x > bPos.x && aPos.x < bPos.x + bDim.x)) &&
+           ((aPos.y < bPos.y && bPos.y < aPos.y + aDim.y) ||
+            (aPos.y > bPos.y && aPos.y < bPos.y + bDim.y));
 }
 
 std::vector<std::pair<bool, sf::Vector2f>> rcCollision(

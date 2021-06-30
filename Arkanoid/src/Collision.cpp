@@ -71,7 +71,5 @@ std::pair<bool, sf::Vector2f> lineSegCollision(
 
     return std::pair<bool, sf::Vector2f>{
         t >= 0 && t <= 1 && u >= 0 && u <= 1,
-        (t >= 0 && t <= 1)
-            ? sf::Vector2f{a.x + t * (b.x - a.x), a.y + t * (b.y - a.y)}
-            : sf::Vector2f{c.x + u * (d.x - c.x), c.y + u * (d.y - c.y)}};
+        sf::Vector2f{a.x + t * (b.x - a.x), a.y + t * (b.y - a.y)}};
 }

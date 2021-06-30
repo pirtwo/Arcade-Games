@@ -17,42 +17,42 @@ bool AABB(
             (ay > by && ay < by + bHeight));
 }
 
-std::vector<sf::Vector2f> rcGetCollision(
+std::vector<std::pair<bool, sf::Vector2f>> rcCollision(
     sf::Vector2f rayA,
     sf::Vector2f rayB,
     sf::Vector2f boxPos,
     sf::Vector2f boxDim)
 {
-    std::vector<sf::Vector2f> collisions;
+    std::vector<std::pair<bool, sf::Vector2f>> collisions;
     std::pair<bool, sf::Vector2f> res;
 
+    // rect top
     res = lineSegCollision(
         rayA, rayB,
         sf::Vector2f(boxPos.x, boxPos.y),
         sf::Vector2f(boxPos.x + boxDim.x, boxPos.y));
-    if (res.first)
-        collisions.push_back(res.second);
+    collisions.push_back(res);
 
+    // rect left
     res = lineSegCollision(
         rayA, rayB,
         sf::Vector2f(boxPos.x, boxPos.y),
         sf::Vector2f(boxPos.x, boxPos.y + boxDim.y));
-    if (res.first)
-        collisions.push_back(res.second);
+    collisions.push_back(res);
 
-    res = lineSegCollision(
-        rayA, rayB,
-        sf::Vector2f(boxPos.x + boxDim.x, boxPos.y),
-        sf::Vector2f(boxPos.x + boxDim.x, boxPos.y + boxDim.y));
-    if (res.first)
-        collisions.push_back(res.second);
-
+    // rect bottom
     res = lineSegCollision(
         rayA, rayB,
         sf::Vector2f(boxPos.x, boxPos.y + boxDim.y),
         sf::Vector2f(boxPos.x + boxDim.x, boxPos.y + boxDim.y));
-    if (res.first)
-        collisions.push_back(res.second);
+    collisions.push_back(res);
+
+    // rect right
+    res = lineSegCollision(
+        rayA, rayB,
+        sf::Vector2f(boxPos.x + boxDim.x, boxPos.y),
+        sf::Vector2f(boxPos.x + boxDim.x, boxPos.y + boxDim.y));
+    collisions.push_back(res);
 
     return collisions;
 }

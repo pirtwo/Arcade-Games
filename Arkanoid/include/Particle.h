@@ -5,6 +5,7 @@
 #include <vector>
 #include <memory>
 #include "Random.h"
+#include "SceneComponent.h"
 
 struct Particle : public sf::Transformable
 {
@@ -14,7 +15,7 @@ struct Particle : public sf::Transformable
     sf::Vector2f vel;
 };
 
-class ParticleSystem : public sf::Drawable, public sf::Transformable
+class ParticleSystem : public SceneComponent
 {
 protected:
     Random _rg;
@@ -36,7 +37,7 @@ protected:
 
 public:
     ParticleSystem(
-        sf::Texture textures[],
+        sf::Texture *textures[],
         int textureNum,
         float minAngle,
         float maxAngle,

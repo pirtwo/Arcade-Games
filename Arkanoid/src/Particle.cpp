@@ -6,7 +6,7 @@
 #include "Random.h"
 
 ParticleSystem::ParticleSystem(
-    sf::Texture textures[],
+    sf::Texture *textures[],
     int textureNum,
     float minAngle,
     float maxAngle,
@@ -38,7 +38,8 @@ ParticleSystem::ParticleSystem(
 
 ParticleSystem::~ParticleSystem()
 {
-    //
+    _sprites.clear();
+    _particles.clear();
 }
 
 void ParticleSystem::initParticle(Particle &p)

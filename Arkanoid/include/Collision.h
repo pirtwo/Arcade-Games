@@ -10,7 +10,7 @@ bool rayVsBox(
     sf::Vector2f rayOri,
     sf::Vector2f rayDir,
     sf::Vector2f boxPos,
-    sf::Vector2f boxSize,
+    sf::Vector2f boxDim,
     sf::Vector2f &contactPoint,
     sf::Vector2f &contactNormal);
 

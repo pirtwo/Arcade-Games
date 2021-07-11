@@ -4,7 +4,7 @@ bool rayVsBox(
     sf::Vector2f rayOri,
     sf::Vector2f rayDir,
     sf::Vector2f boxPos,
-    sf::Vector2f boxSize,
+    sf::Vector2f boxDim,
     sf::Vector2f &contactPoint,
     sf::Vector2f &contactNormal)
 {
@@ -12,8 +12,8 @@ bool rayVsBox(
 
     float boxMinX = boxPos.x;
     float boxMinY = boxPos.y;
-    float boxMaxX = boxPos.x + boxSize.x;
-    float boxMaxY = boxPos.y + boxSize.y;
+    float boxMaxX = boxPos.x + boxDim.x;
+    float boxMaxY = boxPos.y + boxDim.y;
 
     float lineMinX = std::min(rayOri.x, rayOri.x + rayDir.x);
     float lineMaxX = std::max(rayOri.x, rayOri.x + rayDir.x);

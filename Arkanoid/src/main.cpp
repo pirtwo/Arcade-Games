@@ -3,7 +3,7 @@
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode(700, 500), "SFML - Particle System");
+    sf::RenderWindow window(sf::VideoMode(700, 500), "Arkanoid");
     window.setFramerateLimit(60);
 
     while (window.isOpen())

@@ -1,77 +1,72 @@
 #include "Collision.h"
-#include <SFML/Graphics.hpp>
 
-bool AABB(
-    float ax,
-    float ay,
-    float aWidth,
-    float aHeight,
-    float bx,
-    float by,
-    float bWidth,
-    float bHeight)
-{
-    return ((ax < bx && bx < ax + aWidth) ||
-            (ax > bx && ax < bx + bWidth)) &&
-           ((ay < by && by < ay + aHeight) ||
-            (ay > by && ay < by + bHeight));
-}
-
-std::vector<sf::Vector2f> rcGetCollision(
-    sf::Vector2f rayA,
-    sf::Vector2f rayB,
+bool rayVsBox(
+    sf::Vector2f rayOri,
+    sf::Vector2f rayDir,
     sf::Vector2f boxPos,
-    sf::Vector2f boxDim)
+    sf::Vector2f boxSize,
+    sf::Vector2f &contactPoint,
+    sf::Vector2f &contactNormal)
 {
-    std::vector<sf::Vector2f> collisions;
-    std::pair<bool, sf::Vector2f> res;
+    sf::Vector2f cp(0.f, 0.f);
 
-    res = lineSegCollision(
-        rayA, rayB,
-        sf::Vector2f(boxPos.x, boxPos.y),
-        sf::Vector2f(boxPos.x + boxDim.x, boxPos.y));
-    if (res.first)
-        collisions.push_back(res.second);
+    float boxMinX = boxPos.x;
+    float boxMinY = boxPos.y;
+    float boxMaxX = boxPos.x + boxSize.x;
+    float boxMaxY = boxPos.y + boxSize.y;
 
-    res = lineSegCollision(
-        rayA, rayB,
-        sf::Vector2f(boxPos.x, boxPos.y),
-        sf::Vector2f(boxPos.x, boxPos.y + boxDim.y));
-    if (res.first)
-        collisions.push_back(res.second);
+    float lineMinX = std::min(rayOri.x, rayOri.x + rayDir.x);
+    float lineMaxX = std::max(rayOri.x, rayOri.x + rayDir.x);
+    float lineMinY = std::min(rayOri.y, rayOri.y + rayDir.y);
+    float lineMaxY = std::max(rayOri.y, rayOri.y + rayDir.y);
 
-    res = lineSegCollision(
-        rayA, rayB,
-        sf::Vector2f(boxPos.x + boxDim.x, boxPos.y),
-        sf::Vector2f(boxPos.x + boxDim.x, boxPos.y + boxDim.y));
-    if (res.first)
-        collisions.push_back(res.second);
+    float t0x = (boxMinX - rayOri.x) / rayDir.x;
+    float t1x = (boxMaxX - rayOri.x) / rayDir.x;
+    float t0y = (boxMinY - rayOri.y) / rayDir.y;
+    float t1y = (boxMaxY - rayOri.y) / rayDir.y;
 
-    res = lineSegCollision(
-        rayA, rayB,
-        sf::Vector2f(boxPos.x, boxPos.y + boxDim.y),
-        sf::Vector2f(boxPos.x + boxDim.x, boxPos.y + boxDim.y));
-    if (res.first)
-        collisions.push_back(res.second);
+    float tMin = std::max(std::min(t0x, t1x), std::min(t0y, t1y));
+    float tMax = std::min(std::max(t0x, t1x), std::max(t0y, t1y));
 
-    return collisions;
-}
+    // calc contact point
+    cp =
+        tMin >= 0
+            ? rayOri + rayDir * tMin
+            : rayOri + rayDir * tMax;
 
-std::pair<bool, sf::Vector2f> lineSegCollision(
-    sf::Vector2f a,
-    sf::Vector2f b,
-    sf::Vector2f c,
-    sf::Vector2f d)
-{
-    float t = ((a.x - c.x) * (c.y - d.y) - (a.y - c.y) * (c.x - d.x)) /
-              ((a.x - b.x) * (c.y - d.y) - (a.y - b.y) * (c.x - d.x));
+    // check ray hit the box and contact
+    // point is on the ray
+    if (tMax < tMin ||
+        cp.x < lineMinX ||
+        cp.x > lineMaxX ||
+        cp.y < lineMinY ||
+        cp.y > lineMaxY)
+        return false;
 
-    float u = ((b.x - a.x) * (a.y - c.y) - (b.y - a.y) * (a.x - c.x)) /
-              ((a.x - b.x) * (c.y - d.y) - (a.y - b.y) * (c.x - d.x));
+    // set contact point
+    contactPoint = cp;
 
-    return std::pair<bool, sf::Vector2f>{
-        t >= 0 && t <= 1 && u >= 0 && u <= 1,
-        (t >= 0 && t <= 1)
-            ? sf::Vector2f{a.x + t * (b.x - a.x), a.y + t * (b.y - a.y)}
-            : sf::Vector2f{c.x + u * (d.x - c.x), c.y + u * (d.y - c.y)}};
+    // set contact normal
+    if (contactPoint.x == boxMinX)
+    {
+        contactNormal.x = tMin >= 0 ? -1 : 1;
+        contactNormal.y = 0;
+    }
+    else if (contactPoint.x == boxMaxX)
+    {
+        contactNormal.x = tMin >= 0 ? 1 : -1;
+        contactNormal.y = 0;
+    }
+    else if (contactPoint.y == boxMinY)
+    {
+        contactNormal.x = 0;
+        contactNormal.y = tMin >= 0 ? -1 : 1;
+    }
+    else if (contactPoint.y == boxMaxY)
+    {
+        contactNormal.x = 0;
+        contactNormal.y = tMin >= 0 ? 1 : -1;
+    }
+
+    return true;
 }

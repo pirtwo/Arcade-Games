@@ -3,15 +3,52 @@
 #include <vector>
 #include <memory>
 #include "Key.h"
+#include "Ball.h"
+#include "Entity.h"
 #include "Paddle.h"
 #include "Particle.h"
+#include "Collision.h"
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode(700, 500), "Arkanoid");
+    sf::RenderWindow window(sf::VideoMode(500, 700), "Arkanoid");
     window.setFramerateLimit(60);
 
     Key arrowL, arrowR;
+
+    std::vector<std::shared_ptr<Entity>> world;
+
+    std::map<std::string, std::shared_ptr<sf::Texture>> textures;
+    textures["ball"] =
+        std::make_shared<sf::Texture>(sf::Texture());
+    textures["paddle"] =
+        std::make_shared<sf::Texture>(sf::Texture());
+    textures["tile_green"] =
+        std::make_shared<sf::Texture>(sf::Texture());
+    if (!textures["ball"]->loadFromFile("./assets/ball.png") ||
+        !textures["paddle"]->loadFromFile("./assets/paddle.png") ||
+        !textures["tile_green"]->loadFromFile("./assets/tile_green.png"))
+    {
+        return EXIT_FAILURE;
+    }
+
+    auto paddle = std::make_shared<Paddle>(*textures["paddle"], 5.5);
+    paddle->setScale(0.08, 0.08);
+    paddle->setPosition(300, 600);
+    world.push_back(paddle);
+
+    auto ball = std::make_shared<Ball>(*textures["ball"]);
+    ball->vel = sf::Vector2f(-1, -1);
+    ball->setScale(0.1, 0.1);
+    ball->setPosition(100, 100);
+    world.push_back(ball);
+
+    auto fieldBounds = sf::RectangleShape(sf::Vector2f(
+        window.getSize().x, window.getSize().y));
+    fieldBounds.setPosition(0, 0);
+
+    sf::Vector2f cp, cn;
+    sf::FloatRect bound;
 
     while (window.isOpen())
     {
@@ -52,11 +89,76 @@ int main()
             }
         }
 
-        //======== update =========//
+        //======== update ========//
+        if (arrowL.isDown)
+            paddle->moveLeft();
+        if (arrowR.isDown)
+            paddle->moveRight();
+        if (!arrowL.isDown && !arrowR.isDown)
+            paddle->stop();
 
-        //======== draw ==========//
+        // collision detection
+
+        for (auto &&i : world)
+        {
+            if (i->name == "ball")
+            {
+                // check for walls collision
+                if (rayVsBox(
+                        ball->getPosition(),
+                        ball->vel,
+                        fieldBounds.getPosition(),
+                        fieldBounds.getSize(),
+                        cp, cn))
+                {
+                    if (cn.x != 0 && cn.y != 0)
+                        ball->vel *= -1.f;
+                    else if (cn.x != 0)
+                        ball->vel.x *= -1;
+                    else if (cn.y != 0)
+                        ball->vel.y *= -1;
+                    ball->setPosition(cp + cn);
+                }
+            }
+
+            if (i->name == "paddle")
+            {
+                // check for ball hit to paddle
+
+                bound = i->getBounds();
+
+                if (rayVsBox(
+                        ball->getPosition(),
+                        ball->vel,
+                        sf::Vector2f(bound.top, bound.left),
+                        sf::Vector2f(bound.width, bound.height),
+                        cp, cn))
+                {
+                    ball->setPosition(cp);
+                    if (cn.x == 1 || cn.x == -1)
+                        ball->vel.x *= -1;
+                    if (cn.y == 1 || cn.y == -1)
+                        ball->vel.y *= -1;
+                }
+            }
+
+            if (i->name == "tile")
+            {
+                // check for ball hit
+            }
+        }
+
+        for (auto &&i : world)
+        {
+            i->update();
+        }
+
+        //======== draw ========//
         window.clear();
-
+        for (auto &&i : world)
+        {
+            window.draw(*i);
+        }
         window.display();
     }
 

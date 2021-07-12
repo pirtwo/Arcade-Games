@@ -2,6 +2,8 @@
 
 Ball::Ball(sf::Texture &t)
 {
+    this->name = "ball";
+    this->vel = sf::Vector2f(0, 0);
     _sp = sf::Sprite(t);
 }
 
@@ -15,14 +17,9 @@ sf::FloatRect Ball::getBounds()
     return getTransform().transformRect(_sp.getLocalBounds());
 }
 
-sf::Vector2f Ball::getVelocity()
-{
-    return _vel;
-}
-
 void Ball::update()
 {
-    move(_vel);
+    move(this->vel);
 }
 
 void Ball::draw(sf::RenderTarget &target, sf::RenderStates states) const

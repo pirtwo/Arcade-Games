@@ -47,7 +47,27 @@ bool rayVsBox(
     contactPoint = cp;
 
     // set contact normal
-    if (contactPoint.x == boxMinX)
+    if (contactPoint.x == boxMinX && contactPoint.y == boxMinY)
+    {
+        contactNormal.x = tMin >= 0 ? -1 : 1;
+        contactNormal.y = tMin >= 0 ? -1 : 1;
+    }
+    else if (contactPoint.x == boxMinX && contactPoint.y == boxMaxY)
+    {
+        contactNormal.x = tMin >= 0 ? -1 : 1;
+        contactNormal.y = tMin >= 0 ? 1 : -1;
+    }
+    else if (contactPoint.x == boxMaxX && contactPoint.y == boxMinY)
+    {
+        contactNormal.x = tMin >= 0 ? 1 : -1;
+        contactNormal.y = tMin >= 0 ? -1 : 1;
+    }
+    else if (contactPoint.x == boxMaxX && contactPoint.y == boxMaxY)
+    {
+        contactNormal.x = tMin >= 0 ? 1 : -1;
+        contactNormal.y = tMin >= 0 ? 1 : -1;
+    }
+    else if (contactPoint.x == boxMinX)
     {
         contactNormal.x = tMin >= 0 ? -1 : 1;
         contactNormal.y = 0;

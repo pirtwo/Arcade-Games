@@ -27,6 +27,11 @@ void Paddle::moveRight()
     _vel.x = _speed;
 }
 
+void Paddle::stop()
+{
+    _vel.x = 0;
+}
+
 void Paddle::update()
 {
     move(_vel);

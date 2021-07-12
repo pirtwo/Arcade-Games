@@ -16,6 +16,7 @@ public:
     sf::FloatRect getBounds() override;
     void moveLeft();
     void moveRight();
+    void stop();
     void update() override;
     void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
 };

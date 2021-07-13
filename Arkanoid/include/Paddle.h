@@ -6,9 +6,11 @@
 class Paddle : public Entity
 {
 protected:
-    float _speed;
     sf::Sprite _sp;
-    sf::Vector2f _vel;
+
+public:
+    float speed;
+    sf::Vector2f vel;
 
 public:
     Paddle(sf::Texture &t, float speed);

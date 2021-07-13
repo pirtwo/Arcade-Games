@@ -2,9 +2,9 @@
 
 Paddle::Paddle(sf::Texture &t, float speed)
 {
-    name = "paddle";
+    this->name = "paddle";
+    this->speed = speed;
     _sp = sf::Sprite(t);
-    _speed = speed;
 }
 
 Paddle::~Paddle()
@@ -19,22 +19,22 @@ sf::FloatRect Paddle::getBounds()
 
 void Paddle::moveLeft()
 {
-    _vel.x = _speed * -1;
+    vel.x = speed * -1;
 }
 
 void Paddle::moveRight()
 {
-    _vel.x = _speed;
+    vel.x = speed;
 }
 
 void Paddle::stop()
 {
-    _vel.x = 0;
+    vel.x = 0;
 }
 
 void Paddle::update()
 {
-    move(_vel);
+    move(vel);
 }
 
 void Paddle::draw(sf::RenderTarget &target, sf::RenderStates states) const

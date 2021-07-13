@@ -5,6 +5,9 @@ Ball::Ball(sf::Texture &t)
     this->name = "ball";
     this->vel = sf::Vector2f(0, 0);
     _sp = sf::Sprite(t);
+    _sp.setOrigin(
+        _sp.getLocalBounds().width / 2,
+        _sp.getLocalBounds().width / 2);
 }
 
 Ball::~Ball()

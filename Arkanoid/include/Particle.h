@@ -36,7 +36,7 @@ protected:
 
 public:
     ParticleSystem(
-        sf::Texture textures[],
+        const std::vector<std::shared_ptr<sf::Texture>> &textures,
         int textureNum,
         float minAngle,
         float maxAngle,

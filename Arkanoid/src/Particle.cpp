@@ -6,7 +6,7 @@
 #include "Random.h"
 
 ParticleSystem::ParticleSystem(
-    sf::Texture textures[],
+    const std::vector<std::shared_ptr<sf::Texture>> &textures,
     int textureNum,
     float minAngle,
     float maxAngle,
@@ -33,7 +33,7 @@ ParticleSystem::ParticleSystem(
     _loop = loop;
 
     for (int i = 0; i < textureNum; i++)
-        _sprites.push_back(std::make_unique<sf::Sprite>(textures[i]));
+        _sprites.push_back(std::make_unique<sf::Sprite>(*textures[i]));
 }
 
 ParticleSystem::~ParticleSystem()

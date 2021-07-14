@@ -219,7 +219,7 @@ int main()
                         sf::Vector2f(bound.width, bound.height),
                         cp, cn))
                 {
-                    if (cn.y == -1)
+                    if (cn.y == -1 && ballPrevPos.y < paddle->getPosition().y)
                     {
                         if (paddle->vel.x > 0)
                             ball->vel.x = abs(ball->vel.x);

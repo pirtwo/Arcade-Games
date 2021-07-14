@@ -171,9 +171,16 @@ int main()
             i->update();
         }
 
-        for (auto &&i : effects)
+        for (auto i = effects.begin(); i != effects.end(); i++)
         {
-            i->update(1.f);
+            auto e = i->get();
+            e->update(1.f);
+            if (e->getFule() == 0)
+            {
+                i = effects.erase(i);
+                if (i == effects.end())
+                    break;
+            }
         }
 
         // collision detection

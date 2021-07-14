@@ -2,6 +2,7 @@
 #include <map>
 #include <vector>
 #include <memory>
+#include <math.h>
 #include "Key.h"
 #include "Ball.h"
 #include "Tile.h"
@@ -218,13 +219,15 @@ int main()
                         sf::Vector2f(bound.width, bound.height),
                         cp, cn))
                 {
-                    if (cn.x != 0 && cn.y != 0)
-                        ball->vel *= -1.f;
-                    else if (cn.x != 0)
-                        ball->vel.x *= -1;
-                    else if (cn.y != 0)
+                    if (cn.y == -1)
+                    {
+                        if (paddle->vel.x > 0)
+                            ball->vel.x = abs(ball->vel.x);
+                        else if (paddle->vel.x < 0)
+                            ball->vel.x = abs(ball->vel.x) * -1;
                         ball->vel.y *= -1;
-                    ball->setPosition(cp + cn);
+                        ball->setPosition(cp + cn);
+                    }
                 }
             }
 

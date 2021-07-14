@@ -264,11 +264,11 @@ int main()
 
         //======== draw ========//
         window.clear();
-        for (auto &&i : world)
+        for (auto &&i : effects)
         {
             window.draw(*i);
         }
-        for (auto &&i : effects)
+        for (auto &&i : world)
         {
             window.draw(*i);
         }

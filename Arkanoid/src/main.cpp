@@ -97,10 +97,11 @@ int main()
     paddle->setPosition(300, 600);
     world.push_back(paddle);
 
+    sf::Vector2f ballPrevPos;
     auto ball = std::make_shared<Ball>(*textures["ball"]);
-    ball->vel = sf::Vector2f(-2.5, -2.5);
+    ball->vel = sf::Vector2f(2.5, -2.5);
     ball->setScale(0.1, 0.1);
-    ball->setPosition(100, 100);
+    ball->setPosition(window.getSize().x / 2, 400);
     world.push_back(ball);
 
     auto fieldBounds = sf::RectangleShape(sf::Vector2f(
@@ -162,6 +163,18 @@ int main()
         if (!arrowL.isDown && !arrowR.isDown)
             paddle->stop();
 
+        ballPrevPos = ball->getPosition();
+
+        for (auto &&i : world)
+        {
+            i->update();
+        }
+
+        for (auto &&i : effects)
+        {
+            i->update(1.f);
+        }
+
         // collision detection
 
         for (auto i = world.begin(); i != world.end(); i++)
@@ -172,7 +185,7 @@ int main()
             {
                 // check for walls collision
                 if (rayVsBox(
-                        ball->getPosition(),
+                        ballPrevPos,
                         ball->vel,
                         fieldBounds.getPosition(),
                         fieldBounds.getSize(),
@@ -199,7 +212,7 @@ int main()
                 bound.height += ball->getBounds().height;
 
                 if (rayVsBox(
-                        ball->getPosition(),
+                        ballPrevPos,
                         ball->vel,
                         sf::Vector2f(bound.left, bound.top),
                         sf::Vector2f(bound.width, bound.height),
@@ -226,7 +239,7 @@ int main()
                 bound.height += ball->getBounds().height;
 
                 if (rayVsBox(
-                        ball->getPosition(),
+                        ballPrevPos,
                         ball->vel,
                         sf::Vector2f(bound.left, bound.top),
                         sf::Vector2f(bound.width, bound.height),
@@ -247,16 +260,6 @@ int main()
                         break;
                 }
             }
-        }
-
-        for (auto &&i : world)
-        {
-            i->update();
-        }
-
-        for (auto &&i : effects)
-        {
-            i->update(1.f);
         }
 
         //======== draw ========//

@@ -30,14 +30,13 @@ protected:
     int _maxFade;
     bool _loop;
     std::vector<std::unique_ptr<Particle>> _particles;
-    std::vector<std::unique_ptr<sf::Sprite>> _sprites;
+    std::vector<std::shared_ptr<sf::Sprite>> _sprites;
 
     void initParticle(Particle &p);
 
 public:
     ParticleSystem(
-        const std::vector<std::shared_ptr<sf::Texture>> &textures,
-        int textureNum,
+        const std::vector<std::shared_ptr<sf::Sprite>> &sprites,
         float minAngle,
         float maxAngle,
         float minSpeed,

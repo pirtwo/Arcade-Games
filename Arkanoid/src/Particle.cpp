@@ -1,13 +1,8 @@
 #include "Particle.h"
-#include <SFML/Graphics.hpp>
-#include <vector>
-#include <memory>
 #include <math.h>
-#include "Random.h"
 
 ParticleSystem::ParticleSystem(
-    const std::vector<std::shared_ptr<sf::Texture>> &textures,
-    int textureNum,
+    const std::vector<std::shared_ptr<sf::Sprite>> &sprites,
     float minAngle,
     float maxAngle,
     float minSpeed,
@@ -31,9 +26,7 @@ ParticleSystem::ParticleSystem(
     _minFade = minFade;
     _maxFade = maxFade;
     _loop = loop;
-
-    for (int i = 0; i < textureNum; i++)
-        _sprites.push_back(std::make_unique<sf::Sprite>(*textures[i]));
+    _sprites = sprites;
 }
 
 ParticleSystem::~ParticleSystem()

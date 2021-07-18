@@ -19,23 +19,35 @@ struct Level
 };
 
 void createTiles(
-    std::vector<std::shared_ptr<Entity>> &world,
-    Atlas &atlas,
-    float x,
-    float y,
-    int rows,
-    int cols,
-    float scaleX,
-    float scaleY,
-    float paddingX,
-    float paddingY)
+    Level &level, Atlas &atlas, std::vector<std::shared_ptr<Entity>> &world)
 {
-    for (int i = 0; i < rows; i++)
+    float x = 0, y = 0, paddingX = 10, paddingY = 10;
+
+    for (int i = 0; i < (int)level.data.size(); i++)
     {
-        for (int j = 0; j < cols; j++)
+        for (int j = 0; j < (int)level.data[i].size(); j++)
         {
-            auto tile = std::make_shared<Tile>(atlas, 1);
-            tile->setScale(scaleX, scaleY);
+            if (level.data[i][j] == 0)
+                continue;
+
+            std::shared_ptr<Tile> tile;
+
+            switch (level.data[i][j])
+            {
+            case 2:
+                tile = std::make_shared<Tile>(atlas, "tileGreen_01.png", 1);
+                break;
+            case 3:
+                tile = std::make_shared<Tile>(atlas, "tileOrange_01.png", 1);
+                break;
+            case 4:
+                tile = std::make_shared<Tile>(atlas, "tileRed_01.png", 1);
+                break;
+            default:
+                break;
+            }
+
+            tile->setScale(0.2, 0.2);
             tile->setPosition(
                 x + j * (tile->getBounds().width + paddingX),
                 y + i * (tile->getBounds().height + paddingY));
@@ -108,7 +120,7 @@ int main()
         window.getSize().x, window.getSize().y));
     fieldBounds.setPosition(0, 0);
 
-    createTiles(world, *atlas, 50, 50, 5, 6, 0.2, 0.2, 20, 20);
+    createTiles(*level1, *atlas, world);
 
     while (window.isOpen())
     {

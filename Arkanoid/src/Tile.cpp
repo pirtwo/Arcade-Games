@@ -1,12 +1,12 @@
 #include "Tile.h"
 #include "Atlas.h"
 
-Tile::Tile(Atlas &a, int hp)
+Tile::Tile(Atlas &a, const char texture[], int hp)
 {
     this->name = "tile";
     this->hp = hp;
     _sp = sf::Sprite(a.texture);
-    _sp.setTextureRect(a.data["tileGreen_01.png"]);
+    _sp.setTextureRect(a.data[texture]);
 }
 
 Tile::~Tile()

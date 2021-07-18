@@ -13,7 +13,7 @@ public:
     int hp;
 
 public:
-    Tile(Atlas &a, int hp);
+    Tile(Atlas &a, const char texture[], int hp);
     ~Tile();
     sf::FloatRect getBounds() override;
     void update() override;

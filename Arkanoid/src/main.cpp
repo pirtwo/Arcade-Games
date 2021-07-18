@@ -10,15 +10,17 @@
 #include "Paddle.h"
 #include "Particle.h"
 #include "Collision.h"
+#include "Loader.h"
+#include "Atlas.h"
 
-/**
- * TODO: create different levels with different tile layout
- * TODO: store level layouts in a file
- */
+struct Level
+{
+    std::vector<std::vector<int>> data;
+};
 
 void createTiles(
     std::vector<std::shared_ptr<Entity>> &world,
-    sf::Texture &t,
+    Atlas &atlas,
     float x,
     float y,
     int rows,
@@ -32,7 +34,7 @@ void createTiles(
     {
         for (int j = 0; j < cols; j++)
         {
-            auto tile = std::make_shared<Tile>(t, 1);
+            auto tile = std::make_shared<Tile>(atlas, 1);
             tile->setScale(scaleX, scaleY);
             tile->setPosition(
                 x + j * (tile->getBounds().width + paddingX),
@@ -44,13 +46,13 @@ void createTiles(
 
 void addEffect(
     std::vector<std::shared_ptr<ParticleSystem>> &effects,
-    const std::vector<std::shared_ptr<sf::Texture>> &textures,
+    const std::vector<std::shared_ptr<sf::Sprite>> &sprites,
     int n,
     float x,
     float y)
 {
     auto p = std::make_shared<ParticleSystem>(
-        textures, 1, 0, 360, 2.f, 3.f, 0.05, 0.09, 0, 360, 3, 4, false);
+        sprites, 0, 360, 2.f, 3.f, 0.05, 0.09, 0, 360, 3, 4, false);
     p->setPosition(x, y);
     p->addFule(n);
     effects.push_back(p);
@@ -63,19 +65,15 @@ int main()
 
     // ========= load assets =======//
 
-    std::map<std::string, std::shared_ptr<sf::Texture>> textures;
-    textures["ball"] =
-        std::make_shared<sf::Texture>(sf::Texture());
-    textures["paddle"] =
-        std::make_shared<sf::Texture>(sf::Texture());
-    textures["tileGreen_01"] =
-        std::make_shared<sf::Texture>(sf::Texture());
-    textures["tileGreen_02"] =
-        std::make_shared<sf::Texture>(sf::Texture());
-    if (!textures["ball"]->loadFromFile("./assets/ball.png") ||
-        !textures["paddle"]->loadFromFile("./assets/paddle.png") ||
-        !textures["tileGreen_01"]->loadFromFile("./assets/tileGreen_01.png") ||
-        !textures["tileGreen_02"]->loadFromFile("./assets/tileGreen_02.png"))
+    auto atlas = std::make_shared<Atlas>();
+    if (!atlas->texture.loadFromFile("./assets/atlas.png") ||
+        !loadAtlasData("./assets/atlas.dat", atlas->data))
+    {
+        return EXIT_FAILURE;
+    }
+
+    auto level1 = std::make_shared<Level>();
+    if (!loadLevelData("./assets/levels/level_01.dat", level1->data))
     {
         return EXIT_FAILURE;
     }
@@ -90,16 +88,17 @@ int main()
     std::vector<std::shared_ptr<Entity>> world;
 
     std::vector<std::shared_ptr<ParticleSystem>> effects;
-    std::vector<std::shared_ptr<sf::Texture>> effectTextures;
-    effectTextures.push_back(textures["tileGreen_02"]);
+    std::vector<std::shared_ptr<sf::Sprite>> effectSprites;
+    effectSprites.push_back(std::make_shared<sf::Sprite>(atlas->texture));
+    effectSprites[0]->setTextureRect(atlas->data["tileGreen_02.png"]);
 
-    auto paddle = std::make_shared<Paddle>(*textures["paddle"], 5.5);
+    auto paddle = std::make_shared<Paddle>(*atlas, 5.5);
     paddle->setScale(0.08, 0.08);
     paddle->setPosition(300, 600);
     world.push_back(paddle);
 
     sf::Vector2f ballPrevPos;
-    auto ball = std::make_shared<Ball>(*textures["ball"]);
+    auto ball = std::make_shared<Ball>(*atlas);
     ball->vel = sf::Vector2f(2.5, -2.5);
     ball->setScale(0.1, 0.1);
     ball->setPosition(window.getSize().x / 2, 400);
@@ -109,13 +108,7 @@ int main()
         window.getSize().x, window.getSize().y));
     fieldBounds.setPosition(0, 0);
 
-    createTiles(
-        world,
-        *textures["tileGreen_01"],
-        50, 50,
-        5, 6,
-        0.2, 0.2,
-        20, 20);
+    createTiles(world, *atlas, 50, 50, 5, 6, 0.2, 0.2, 20, 20);
 
     while (window.isOpen())
     {
@@ -263,7 +256,7 @@ int main()
                         ball->vel.y *= -1;
                     ball->setPosition(cp + cn);
 
-                    addEffect(effects, effectTextures, 5, cp.x, cp.y);
+                    addEffect(effects, effectSprites, 5, cp.x, cp.y);
 
                     i = world.erase(i);
                     if (i == world.end())

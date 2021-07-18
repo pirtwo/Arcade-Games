@@ -2,6 +2,7 @@
 #define TILE_H_INCLUDE
 
 #include <Entity.h>
+class Atlas;
 
 class Tile : public Entity
 {
@@ -12,7 +13,7 @@ public:
     int hp;
 
 public:
-    Tile(sf::Texture &t, int hp);
+    Tile(Atlas &a, int hp);
     ~Tile();
     sf::FloatRect getBounds() override;
     void update() override;

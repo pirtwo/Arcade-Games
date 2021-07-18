@@ -2,6 +2,7 @@
 #define BALL_H_INCLUDE
 
 #include "Entity.h"
+class Atlas;
 
 class Ball : public Entity
 {
@@ -12,7 +13,7 @@ public:
     sf::Vector2f vel;
 
 public:
-    Ball(sf::Texture &t);
+    Ball(Atlas &a);
     ~Ball();
     sf::FloatRect getBounds() override;
     void update() override;

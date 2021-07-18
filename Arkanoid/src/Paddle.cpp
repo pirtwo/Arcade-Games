@@ -1,10 +1,12 @@
 #include "Paddle.h"
+#include "Atlas.h"
 
-Paddle::Paddle(sf::Texture &t, float speed)
+Paddle::Paddle(Atlas &a, float speed)
 {
     this->name = "paddle";
     this->speed = speed;
-    _sp = sf::Sprite(t);
+    _sp = sf::Sprite(a.texture);
+    _sp.setTextureRect(a.data["paddle.png"]);
 }
 
 Paddle::~Paddle()

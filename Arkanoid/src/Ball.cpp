@@ -1,10 +1,12 @@
 #include "Ball.h"
+#include "Atlas.h"
 
-Ball::Ball(sf::Texture &t)
+Ball::Ball(Atlas &a)
 {
     this->name = "ball";
     this->vel = sf::Vector2f(0, 0);
-    _sp = sf::Sprite(t);
+    _sp = sf::Sprite(a.texture);
+    _sp.setTextureRect(a.data["ball.png"]);
     _sp.setOrigin(
         _sp.getLocalBounds().width / 2,
         _sp.getLocalBounds().width / 2);

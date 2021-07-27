@@ -1,16 +1,17 @@
 #include "Spacecraft.h"
-#include <SFML/Graphics.hpp>
+#include "Helper.h"
 #include <math.h>
-
-const float PI = 3.14;
 
 Spacecraft::Spacecraft(
     sf::Texture &texture,
     float maxSpeed,
     float turnRate,
     float friction,
-    float acceleration) : sf::Sprite()
+    float acceleration)
 {
+    this->hp = 1;
+    this->name = "spacecraft";
+
     _maxSpeed = maxSpeed;
     _turnRate = turnRate;
     _friction = friction;
@@ -24,23 +25,15 @@ Spacecraft::Spacecraft(
     _engRev =
         sf::Vector2f(1, 1);
 
-    setTexture(texture);
-    setOrigin(getGlobalBounds().width / 2, getGlobalBounds().height / 2);
+    _sp = sf::Sprite(texture);
+    _sp.setOrigin(
+        _sp.getLocalBounds().width / 2,
+        _sp.getLocalBounds().height / 2);
 }
 
 Spacecraft::~Spacecraft()
 {
     //
-}
-
-int Spacecraft::getActor()
-{
-    return _actor;
-}
-
-void Spacecraft::setActor(int actor)
-{
-    _actor = actor;
 }
 
 bool Spacecraft::hasThrust()
@@ -50,8 +43,8 @@ bool Spacecraft::hasThrust()
 
 void Spacecraft::thrust()
 {
-    _engThr.x = cos(getRotation() * PI / 180) * _acceleration;
-    _engThr.y = sin(getRotation() * PI / 180) * _acceleration;
+    _engThr.x = cos(degreeToRadian(getRotation())) * _acceleration;
+    _engThr.y = sin(degreeToRadian(getRotation())) * _acceleration;
     _engRev.x = 1;
     _engRev.y = 1;
     _hasThrust = true;

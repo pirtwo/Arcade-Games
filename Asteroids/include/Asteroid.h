@@ -1,29 +1,25 @@
 #ifndef ASTEROID_H_INCLUDE
 #define ASTEROID_H_INCLUDE
 
-#include <SFML/Graphics.hpp>
+#include "Entity.h"
 
-class Asteroid : public sf::Sprite
+class Asteroid : public Entity
 {
-protected:
-    sf::Vector2f _velocity;
-    int _hp;
-    int _maxHP;
-    float _speed;
-    float _angle;
+public:
+    float speed;
+    float angle;
+    sf::Vector2f vel;
 
 public:
     Asteroid(
         sf::Texture &texture,
-        int maxHP,
+        int hp,
         float speed,
         float angle);
+
     ~Asteroid();
-    int getHP();
-    int getMaxHP();
-    float getAngle();
-    void takeHit();
-    void update();
+
+    void update() override;
 };
 
 #endif

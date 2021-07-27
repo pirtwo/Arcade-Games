@@ -1,9 +1,9 @@
 #ifndef SHIP_H_INCLUDE
 #define SHIP_H_INCLUDE
 
-#include <SFML/Graphics.hpp>
+#include "Entity.h"
 
-class Spacecraft : public sf::Sprite
+class Spacecraft : public Entity
 {
 protected:
     sf::Vector2f _velocity;
@@ -14,7 +14,6 @@ protected:
     float _friction;
     float _acceleration;
     float _hasThrust;
-    int _actor;
 
 public:
     Spacecraft(
@@ -23,15 +22,20 @@ public:
         float turnRate,
         float friction,
         float acceleration);
+
     ~Spacecraft();
-    int getActor();
-    void setActor(int actor);
+
     bool hasThrust();
-    void update();
+
     void thrust();
+
     void reverseThrust();
+
     void turnLeft();
+
     void turnRight();
+
+    void update() override;
 };
 
 #endif

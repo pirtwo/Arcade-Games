@@ -1,18 +1,20 @@
 #include "Asteroid.h"
 #include "Helper.h"
-#include <SFML/Graphics.hpp>
 #include <math.h>
 
-Asteroid::Asteroid(sf::Texture &texture, int maxHP, float speed, float angle)
+Asteroid::Asteroid(sf::Texture &texture, int hp, float speed, float angle)
 {
-    _hp = maxHP;
-    _maxHP = maxHP;
-    _speed = speed;
-    _angle = angle;
-    _velocity.x = cos(degreeToRadian(_angle)) * speed;
-    _velocity.y = sin(degreeToRadian(_angle)) * speed;
-    setTexture(texture);
-    setOrigin(getGlobalBounds().width / 2, getGlobalBounds().height / 2);
+    this->name = "asteroid";
+    this->hp = hp;
+    this->speed = speed;
+    this->angle = angle;
+    this->vel = sf::Vector2f(
+        cos(degreeToRadian(this->angle)) * this->speed,
+        sin(degreeToRadian(this->angle)) * this->speed);
+    _sp = sf::Sprite(texture);
+    _sp.setOrigin(
+        _sp.getLocalBounds().width / 2,
+        _sp.getLocalBounds().height / 2);
 }
 
 Asteroid::~Asteroid()
@@ -20,27 +22,7 @@ Asteroid::~Asteroid()
     //
 }
 
-void Asteroid::takeHit()
-{
-    _hp--;
-}
-
-int Asteroid::getHP()
-{
-    return _hp;
-}
-
-int Asteroid::getMaxHP()
-{
-    return _maxHP;
-}
-
-float Asteroid::getAngle()
-{
-    return _angle;
-}
-
 void Asteroid::update()
 {
-    move(_velocity);
+    move(vel);
 }

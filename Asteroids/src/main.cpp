@@ -3,6 +3,7 @@
 #include <map>
 #include <vector>
 #include <memory>
+#include <math.h>
 #include "Entity.h"
 #include "Asteroid.h"
 #include "Spacecraft.h"
@@ -29,14 +30,12 @@ struct State
     bool pause = false;
     bool gameover = true;
     bool showHelp = false;
-    bool hasEnemySpawn = false;
-    bool hasPlayerSpawn = false;
-    int hp = 3;
     int score = 0;
     int lastPlayerFireMS = 0;
     int lastPlayerSpawnMS = 0;
     int lastEnemyFireMS = 0;
     int lastEnemySpawnMS = 0;
+    int currAsteroidNum = 0;
 } state;
 
 void keepInWindow(sf::Transformable &item, sf::RenderWindow &window);
@@ -91,6 +90,15 @@ int main()
 
     vector<shared_ptr<Entity>> world;
     vector<shared_ptr<Emitter>> effects;
+
+    auto playerSpacecraft = make_shared<Spacecraft>(
+        *textures["playerShip"], 5.0, 4.5, 0.99, 0.1);
+    playerSpacecraft->tags.push_back("player");
+    playerSpacecraft->setScale(sf::Vector2f(0.5, 0.5));
+    auto enemySpacecraft = make_shared<Spacecraft>(
+        *textures["enemyShip"], 5.0, 4.5, 0.99, 0.1);
+    enemySpacecraft->setScale(sf::Vector2f(0.5, 0.5));
+    enemySpacecraft->tags.push_back("enemy");
 
     char playerScore[20];
     sf::Text scoreText;
@@ -174,10 +182,13 @@ int main()
     };
 
     auto spacecraftFire =
-        [&](float x, float y, float angle, sf::Texture &t)
+        [&](float x, float y, float angle, sf::Texture &t, std::string tag)
     {
         auto elm = shared_ptr<Projectile>(new Projectile(t, 7.5, angle, 500));
-        elm->setPosition(x, y);
+        elm->tags.push_back(tag);
+        elm->setPosition(
+            x + cos(degreeToRadian(angle)) * 50,
+            y + sin(degreeToRadian(angle)) * 50);
         elm->setRotation(angle);
         elm->setScale(0.5, 0.5);
         world.push_back(elm);
@@ -259,43 +270,29 @@ int main()
         effects.push_back(elm);
     };
 
-    auto gameover = [&]()
-    {
-        state.gameover = true;
-        // TODO: play gameover sound
-    };
-
     auto newgame = [&]()
     {
         clock.restart();
 
-        state.hp = 3;
         state.score = 0;
         state.pause = false;
         state.gameover = false;
 
-        state.hasPlayerSpawn = false;
-        state.lastPlayerFireMS = 0;
+        playerSpacecraft->hp = 3;
+        playerSpacecraft->setPosition(
+            window.getSize().x / 2, window.getSize().y / 2);
 
-        state.hasEnemySpawn = false;
-        state.lastEnemyFireMS = 0;
-        state.lastEnemySpawnMS = 0;
-
-        spacecrafts.clear();
-        projectiles.clear();
-        asteroids.clear();
-        effects.clear();
-        spawnSpacecraft(
-            Actor::PLAYER,
-            window.getSize().x / 2,
-            window.getSize().y / 2);
+        world.clear();
+        world.push_back(playerSpacecraft);
     };
 
     auto respawn = [&]()
     {
         auto spawnArea = findEmptyArea(300, 300);
-        spawnSpacecraft(Actor::PLAYER, spawnArea.x + 150, spawnArea.y + 150);
+        playerSpacecraft->setPosition(spawnArea.x + 150, spawnArea.y + 150);
     };
+
+    newgame();
 
     //=========== game loop ============//
     while (window.isOpen())
@@ -363,36 +360,32 @@ int main()
 
         elapsed = clock.getElapsedTime().asMilliseconds();
 
-        snprintf(playerScore, 20, "score: %d", state.score);
-        scoreText.setString(playerScore);
+        if (upArrow.isDown)
+            playerSpacecraft->thrust();
+        if (upArrow.isUp)
+            playerSpacecraft->reverseThrust();
+        if (leftArrow.isDown)
+            playerSpacecraft->turnLeft();
+        if (rightArrow.isDown)
+            playerSpacecraft->turnRight();
+        if (spacebar.isDown &&
+            elapsed - state.lastPlayerFireMS > settings.PlayerRateOfFire)
+        {
+            state.lastPlayerFireMS = elapsed;
+            spacecraftFire(
+                playerSpacecraft->getPosition().x,
+                playerSpacecraft->getPosition().y,
+                playerSpacecraft->getRotation(),
+                *textures["greenLaser"],
+                "player-projectile");
+        }
 
-        snprintf(
-            playerHP, 20,
-            "hp: %s%s%s",
-            state.hp == 1 ? "|" : "",
-            state.hp == 2 ? "||" : "",
-            state.hp == 3 ? "|||" : "");
-        hpText.setString(playerHP);
-
+        state.currAsteroidNum = 0;
         for (auto i = world.begin(); i != world.end(); i++)
         {
             auto elm = i->get();
-
             if (elm->hp == 0)
             {
-                if (elm->name == "player")
-                {
-                }
-                else if (elm->name == "enemy")
-                {
-                }
-                else if (elm->name == "asteroid")
-                {
-                }
-                else if (elm->name == "projectile")
-                {
-                }
-
                 i = world.erase(i);
                 if (i == world.end())
                     break;
@@ -400,8 +393,15 @@ int main()
                     continue;
             }
 
+            if (elm->checkTag("asteroid"))
+                state.currAsteroidNum++;
+
             elm->update();
             keepInWindow(*elm, window);
+        }
+        for (int i = 0; i < settings.MaxAstroidNum - state.currAsteroidNum; i++)
+        {
+            spawnAsteroid(randFloat(0, window.getSize().x), 0, 0, 360, randInt(1, 3));
         }
 
         // update effects
@@ -418,26 +418,70 @@ int main()
         }
 
         // check collision
-        for (auto i = world.begin(); i != world.end(); i++)
+        for (size_t i = 0; i < world.size(); i++)
         {
-            for (auto j = world.begin(); j != world.end(); j++)
+            for (size_t j = 0; j < world.size(); j++)
             {
-                auto elmA = i->get();
-                auto elmB = i->get();
-                if (i == j ||
-                    (elmA->name == "asteroid" && elmA->name == "asteroid"))
+                if (i == j || world[i]->hp <= 0 || world[j]->hp <= 0)
                     continue;
 
-                if (elmA->getBounds().intersects(elmB->getBounds()))
+                if (world[i]->checkTag("asteroid") && world[j]->checkTag("asteroid"))
+                    continue;
+
+                if (world[i]->getBounds().intersects(world[j]->getBounds()))
                 {
-                    elmA->hp--;
-                    elmB->hp--;
+                    world[i]->hp--;
+                    world[j]->hp--;
+
+                    if ((world[i]->checkTag("player") && world[j]->checkTag("enemy")) ||
+                        (world[i]->checkTag("player") && world[j]->checkTag("asteroid")) ||
+                        (world[i]->checkTag("player") && world[j]->checkTag("enemy-projectile")))
+                    {
+                        if (world[i]->hp > 0)
+                        {
+                            respawn();
+                        }
+                        else
+                        {
+                            state.gameover = true;
+                        }
+                    }
+
+                    if ((world[i]->checkTag("spacecraft") && world[j]->checkTag("asteroid")) ||
+                        (world[i]->checkTag("projectile") && world[j]->checkTag("asteroid")))
+                    {
+                        //
+                    }
+                    if (world[i]->checkTag("player-projectile") && world[j]->checkTag("enemy"))
+                    {
+                        state.score += 100;
+                    }
+                    if (world[i]->checkTag("player-projectile") && world[j]->checkTag("asteroid"))
+                    {
+                        state.score += 10;
+                    }
+
                     spawnDust(
-                        10, elmA->getPosition().x, elmA->getPosition().y,
-                        0.f, 360.f, 1.f, 2.f, 5, 7);
+                        10,
+                        world[i]->getPosition().x,
+                        world[i]->getPosition().y,
+                        0.f, 360.f,
+                        1.f, 2.f,
+                        3, 5);
                 }
             }
         }
+
+        snprintf(playerScore, 20, "score: %d", state.score);
+        scoreText.setString(playerScore);
+
+        snprintf(
+            playerHP, 20,
+            "hp: %s%s%s",
+            playerSpacecraft->hp == 1 ? "|" : "",
+            playerSpacecraft->hp == 2 ? "||" : "",
+            playerSpacecraft->hp == 3 ? "|||" : "");
+        hpText.setString(playerHP);
 
         //=========== draw ==========//
         window.clear();

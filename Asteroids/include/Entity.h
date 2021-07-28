@@ -2,6 +2,7 @@
 #define ENTITY_H_INCLUDE
 
 #include <SFML/Graphics.hpp>
+#include <algorithm>
 
 class Entity : public sf::Drawable, public sf::Transformable
 {
@@ -9,12 +10,18 @@ protected:
     sf::Sprite _sp;
 
 public:
-    std::string name;
     int hp;
+    std::vector<std::string> tags;
 
     virtual ~Entity() {}
 
     virtual void update() = 0;
+
+    virtual bool checkTag(std::string tag)
+    {
+        return std::any_of(tags.begin(), tags.end(), [&](std::string i)
+                           { return i == tag; });
+    }
 
     virtual sf::FloatRect getBounds() const
     {

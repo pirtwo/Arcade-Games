@@ -1,4 +1,5 @@
 #include "Spacecraft.h"
+#include "Particle.h"
 #include "Helper.h"
 #include <math.h>
 
@@ -10,13 +11,19 @@ Spacecraft::Spacecraft(
     float acceleration)
 {
     this->hp = 1;
-    this->name = "spacecraft";
+    this->tags.push_back("spacecraft");
 
     _maxSpeed = maxSpeed;
     _turnRate = turnRate;
     _friction = friction;
     _acceleration = acceleration;
     _hasThrust = false;
+    _exhaust = Emitter(
+        getPosition().x,
+        getPosition().y,
+        getRotation() + 180 - 10.f,
+        getRotation() + 180 + 10.f,
+        1.f, 4.f, 5, 7);
 
     _velocity =
         sf::Vector2f(0, 0);
@@ -48,6 +55,7 @@ void Spacecraft::thrust()
     _engRev.x = 1;
     _engRev.y = 1;
     _hasThrust = true;
+    _exhaust.addFuel(2);
 }
 
 void Spacecraft::reverseThrust()
@@ -73,7 +81,6 @@ void Spacecraft::update()
 {
     _velocity.x += _engThr.x;
     _velocity.y += _engThr.y;
-
     // control ship speed
     float m = sqrt(pow(_velocity.x, 2) + pow(_velocity.y, 2));
     if (m > _maxSpeed)
@@ -82,9 +89,18 @@ void Spacecraft::update()
         _velocity.x = cos(angle) * _maxSpeed;
         _velocity.y = sin(angle) * _maxSpeed;
     }
-
     _velocity.x *= _engRev.x;
     _velocity.y *= _engRev.y;
-
     move(_velocity.x, _velocity.y);
+
+    _exhaust.update();
+    _exhaust.setPosition(getPosition());
+    _exhaust.setMinAngle(getRotation() + 180 - 10.f);
+    _exhaust.setMaxAngle(getRotation() + 180 + 10.f);
+}
+
+void Spacecraft::draw(sf::RenderTarget &target, sf::RenderStates states) const
+{
+    target.draw(_exhaust);
+    target.draw(_sp, states.transform * getTransform());
 }

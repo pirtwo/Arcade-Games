@@ -2,6 +2,7 @@
 #define SHIP_H_INCLUDE
 
 #include "Entity.h"
+#include "Particle.h"
 
 class Spacecraft : public Entity
 {
@@ -14,6 +15,7 @@ protected:
     float _friction;
     float _acceleration;
     float _hasThrust;
+    Emitter _exhaust;
 
 public:
     Spacecraft(
@@ -36,6 +38,8 @@ public:
     void turnRight();
 
     void update() override;
+
+    void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
 };
 
 #endif

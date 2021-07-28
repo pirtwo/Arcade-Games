@@ -48,6 +48,7 @@ protected:
     list<unique_ptr<Particle>> _particles;
 
 public:
+    Emitter() {}
     Emitter(
         float x,
         float y,

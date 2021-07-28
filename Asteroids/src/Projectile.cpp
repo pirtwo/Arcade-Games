@@ -8,7 +8,9 @@ Projectile::Projectile(
     float angle,
     float range)
 {
-    this->name = "projectile";
+    this->hp = 1;
+    this->tags.push_back("projectile");
+
     this->speed = speed;
     this->angle = angle;
     this->range = range;
@@ -30,5 +32,7 @@ Projectile::~Projectile()
 void Projectile::update()
 {
     traveledDist += speed;
+    if (traveledDist >= range)
+        hp = 0;
     move(vel);
 }

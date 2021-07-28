@@ -4,8 +4,9 @@
 
 Asteroid::Asteroid(sf::Texture &texture, int hp, float speed, float angle)
 {
-    this->name = "asteroid";
     this->hp = hp;
+    this->tags.push_back("asteroid");
+
     this->speed = speed;
     this->angle = angle;
     this->vel = sf::Vector2f(

@@ -3,6 +3,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <algorithm>
+#include <memory>
 
 class Entity : public sf::Drawable, public sf::Transformable
 {
@@ -11,17 +12,15 @@ protected:
 
 public:
     int hp;
-    std::vector<std::string> tags;
+    std::string name;
+    Entity *owner;
+    std::vector<std::weak_ptr<Entity>> collisions;
 
     virtual ~Entity() {}
 
     virtual void update() = 0;
 
-    virtual bool checkTag(std::string tag)
-    {
-        return std::any_of(tags.begin(), tags.end(), [&](std::string i)
-                           { return i == tag; });
-    }
+    virtual void handleCollisions() = 0;
 
     virtual sf::FloatRect getBounds() const
     {

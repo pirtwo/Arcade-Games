@@ -93,12 +93,10 @@ int main()
 
     auto playerSpacecraft = make_shared<Spacecraft>(
         *textures["playerShip"], 5.0, 4.5, 0.99, 0.1);
-    playerSpacecraft->tags.push_back("player");
     playerSpacecraft->setScale(sf::Vector2f(0.5, 0.5));
     auto enemySpacecraft = make_shared<Spacecraft>(
         *textures["enemyShip"], 5.0, 4.5, 0.99, 0.1);
     enemySpacecraft->setScale(sf::Vector2f(0.5, 0.5));
-    enemySpacecraft->tags.push_back("enemy");
 
     char playerScore[20];
     sf::Text scoreText;
@@ -182,10 +180,10 @@ int main()
     };
 
     auto spacecraftFire =
-        [&](float x, float y, float angle, sf::Texture &t, std::string tag)
+        [&](float x, float y, float angle, sf::Texture &t, Entity *owner)
     {
         auto elm = shared_ptr<Projectile>(new Projectile(t, 7.5, angle, 500));
-        elm->tags.push_back(tag);
+        elm->owner = owner;
         elm->setPosition(
             x + cos(degreeToRadian(angle)) * 50,
             y + sin(degreeToRadian(angle)) * 50);
@@ -377,7 +375,7 @@ int main()
                 playerSpacecraft->getPosition().y,
                 playerSpacecraft->getRotation(),
                 *textures["greenLaser"],
-                "player-projectile");
+                playerSpacecraft.get());
         }
 
         state.currAsteroidNum = 0;
@@ -393,7 +391,7 @@ int main()
                     continue;
             }
 
-            if (elm->checkTag("asteroid"))
+            if (elm->name == "asteroid")
                 state.currAsteroidNum++;
 
             elm->update();
@@ -422,54 +420,17 @@ int main()
         {
             for (size_t j = 0; j < world.size(); j++)
             {
-                if (i == j || world[i]->hp <= 0 || world[j]->hp <= 0)
+                if (i == j)
                     continue;
-
-                if (world[i]->checkTag("asteroid") && world[j]->checkTag("asteroid"))
-                    continue;
-
                 if (world[i]->getBounds().intersects(world[j]->getBounds()))
-                {
-                    world[i]->hp--;
-                    world[j]->hp--;
-
-                    if ((world[i]->checkTag("player") && world[j]->checkTag("enemy")) ||
-                        (world[i]->checkTag("player") && world[j]->checkTag("asteroid")) ||
-                        (world[i]->checkTag("player") && world[j]->checkTag("enemy-projectile")))
-                    {
-                        if (world[i]->hp > 0)
-                        {
-                            respawn();
-                        }
-                        else
-                        {
-                            state.gameover = true;
-                        }
-                    }
-
-                    if ((world[i]->checkTag("spacecraft") && world[j]->checkTag("asteroid")) ||
-                        (world[i]->checkTag("projectile") && world[j]->checkTag("asteroid")))
-                    {
-                        //
-                    }
-                    if (world[i]->checkTag("player-projectile") && world[j]->checkTag("enemy"))
-                    {
-                        state.score += 100;
-                    }
-                    if (world[i]->checkTag("player-projectile") && world[j]->checkTag("asteroid"))
-                    {
-                        state.score += 10;
-                    }
-
-                    spawnDust(
-                        10,
-                        world[i]->getPosition().x,
-                        world[i]->getPosition().y,
-                        0.f, 360.f,
-                        1.f, 2.f,
-                        3, 5);
-                }
+                    world[i]->collisions.push_back(world[j]);
             }
+        }
+
+        // handle collisions
+        for (auto &&i : world)
+        {
+            i->handleCollisions();
         }
 
         snprintf(playerScore, 20, "score: %d", state.score);

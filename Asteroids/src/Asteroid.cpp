@@ -5,7 +5,7 @@
 Asteroid::Asteroid(sf::Texture &texture, int hp, float speed, float angle)
 {
     this->hp = hp;
-    this->tags.push_back("asteroid");
+    this->name = "asteroid";
 
     this->speed = speed;
     this->angle = angle;
@@ -26,4 +26,21 @@ Asteroid::~Asteroid()
 void Asteroid::update()
 {
     move(vel);
+}
+
+void Asteroid::handleCollisions()
+{
+    for (auto &&i : collisions)
+    {
+        auto elm = i.lock();
+        if (!elm)
+            continue;
+
+        if (elm->name == "projectile" || elm->name == "spacecraft")
+        {
+            hp--;
+        }
+    }
+
+    collisions.clear();
 }

@@ -9,7 +9,7 @@ Projectile::Projectile(
     float range)
 {
     this->hp = 1;
-    this->tags.push_back("projectile");
+    this->name = "projectile";
 
     this->speed = speed;
     this->angle = angle;
@@ -35,4 +35,18 @@ void Projectile::update()
     if (traveledDist >= range)
         hp = 0;
     move(vel);
+}
+
+void Projectile::handleCollisions()
+{
+    for (auto &&i : collisions)
+    {
+        auto elm = i.lock();
+        if (!elm)
+            continue;
+
+        hp--;
+    }
+
+    collisions.clear();
 }

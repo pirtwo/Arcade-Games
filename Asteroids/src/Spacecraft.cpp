@@ -11,7 +11,7 @@ Spacecraft::Spacecraft(
     float acceleration)
 {
     this->hp = 1;
-    this->tags.push_back("spacecraft");
+    this->name = "spacecraft";
 
     _maxSpeed = maxSpeed;
     _turnRate = turnRate;
@@ -97,6 +97,20 @@ void Spacecraft::update()
     _exhaust.setPosition(getPosition());
     _exhaust.setMinAngle(getRotation() + 180 - 10.f);
     _exhaust.setMaxAngle(getRotation() + 180 + 10.f);
+}
+
+void Spacecraft::handleCollisions()
+{
+    for (auto &&i : collisions)
+    {
+        auto elm = i.lock();
+        if (!elm)
+            continue;
+
+        hp--;
+    }
+
+    collisions.clear();
 }
 
 void Spacecraft::draw(sf::RenderTarget &target, sf::RenderStates states) const

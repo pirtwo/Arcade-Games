@@ -20,6 +20,8 @@ public:
     ~Asteroid();
 
     void update() override;
+
+    void handleCollisions() override;
 };
 
 #endif

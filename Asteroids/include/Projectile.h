@@ -21,9 +21,9 @@ public:
 
     ~Projectile();
 
-    bool isBeyondRange();
-
     void update() override;
+
+    void handleCollisions() override;
 };
 
 #endif

@@ -31,6 +31,7 @@ struct State
     bool gameover = true;
     bool showHelp = false;
     int score = 0;
+    int lives = 3;
     int lastPlayerFireMS = 0;
     int lastPlayerSpawnMS = 0;
     int lastEnemyFireMS = 0;
@@ -221,12 +222,7 @@ int main()
     };
 
     auto spawnAsteroid =
-        [&](
-            float x,
-            float y,
-            float minAngle,
-            float maxAngle,
-            int hp)
+        [&](sf::Vector2f pos, float minAngle, float maxAngle, int hp)
     {
         auto elm = shared_ptr<Asteroid>(new Asteroid(
             *textures["asteroid_01"], hp,
@@ -245,7 +241,7 @@ int main()
             elm->setScale(sf::Vector2f(0.9, 0.9));
         }
 
-        elm->setPosition(x, y);
+        elm->setPosition(pos);
         elm->setRotation(randFloat(0.f, 360.f));
         world.push_back(elm);
     };
@@ -272,10 +268,11 @@ int main()
         clock.restart();
 
         state.score = 0;
+        state.lives = 3;
         state.pause = false;
         state.gameover = false;
 
-        playerSpacecraft->hp = 3;
+        playerSpacecraft->hp = 1;
         playerSpacecraft->setPosition(
             window.getSize().x / 2, window.getSize().y / 2);
 
@@ -286,7 +283,9 @@ int main()
     auto respawn = [&]()
     {
         auto spawnArea = findEmptyArea(300, 300);
+        playerSpacecraft->hp = 1;
         playerSpacecraft->setPosition(spawnArea.x + 150, spawnArea.y + 150);
+        world.push_back(playerSpacecraft);
     };
 
     newgame();
@@ -383,8 +382,34 @@ int main()
             auto elm = i->get();
             if (elm->hp == 0)
             {
+
                 if (elm->name == "asteroid")
-                    state.score += 10;
+                {
+                    if (elm->maxHP == 1)
+                    {
+                        state.score += 10;
+                    }
+                    else if (elm->maxHP == 2)
+                    {
+                        spawnAsteroid(elm->getPosition(), 0.f, 360.f, 1);
+                        spawnAsteroid(elm->getPosition(), 0.f, 360.f, 1);
+                        spawnAsteroid(elm->getPosition(), 0.f, 360.f, 1);
+                    }
+                    else if (elm->maxHP == 3)
+                    {
+                        spawnAsteroid(elm->getPosition(), 0.f, 360.f, 2);
+                        spawnAsteroid(elm->getPosition(), 0.f, 360.f, 2);
+                    }
+                }
+
+                if (elm->name == "spacecraft" && elm->owner == "player")
+                {
+                    state.lives--;
+                    if (state.lives != 0)
+                        respawn();
+                    else
+                        state.gameover = true;
+                }
 
                 if (elm->name == "spacecraft" && elm->owner == "cpu")
                     state.score += 50;
@@ -406,7 +431,8 @@ int main()
         }
         for (int i = 0; i < settings.MaxAstroidNum - state.currAsteroidNum; i++)
         {
-            spawnAsteroid(randFloat(0, window.getSize().x), 0, 0, 360, randInt(1, 3));
+            spawnAsteroid(
+                sf::Vector2f(randFloat(0, window.getSize().x), 0), -50, 360, randInt(1, 3));
         }
 
         // update effects
@@ -446,9 +472,9 @@ int main()
         snprintf(
             playerHP, 20,
             "hp: %s%s%s",
-            playerSpacecraft->hp == 1 ? "|" : "",
-            playerSpacecraft->hp == 2 ? "||" : "",
-            playerSpacecraft->hp == 3 ? "|||" : "");
+            state.lives == 1 ? "|" : "",
+            state.lives == 2 ? "||" : "",
+            state.lives == 3 ? "|||" : "");
         hpText.setString(playerHP);
 
         //=========== draw ==========//

@@ -93,9 +93,11 @@ int main()
 
     auto playerSpacecraft = make_shared<Spacecraft>(
         *textures["playerShip"], 5.0, 4.5, 0.99, 0.1);
+    playerSpacecraft->owner = "player";
     playerSpacecraft->setScale(sf::Vector2f(0.5, 0.5));
     auto enemySpacecraft = make_shared<Spacecraft>(
         *textures["enemyShip"], 5.0, 4.5, 0.99, 0.1);
+    enemySpacecraft->owner = "cpu";
     enemySpacecraft->setScale(sf::Vector2f(0.5, 0.5));
 
     char playerScore[20];
@@ -180,13 +182,11 @@ int main()
     };
 
     auto spacecraftFire =
-        [&](float x, float y, float angle, sf::Texture &t, Entity *owner)
+        [&](std::string owner, float x, float y, float angle, sf::Texture &t)
     {
         auto elm = shared_ptr<Projectile>(new Projectile(t, 7.5, angle, 500));
         elm->owner = owner;
-        elm->setPosition(
-            x + cos(degreeToRadian(angle)) * 50,
-            y + sin(degreeToRadian(angle)) * 50);
+        elm->setPosition(x, y);
         elm->setRotation(angle);
         elm->setScale(0.5, 0.5);
         world.push_back(elm);
@@ -371,11 +371,11 @@ int main()
         {
             state.lastPlayerFireMS = elapsed;
             spacecraftFire(
+                "player",
                 playerSpacecraft->getPosition().x,
                 playerSpacecraft->getPosition().y,
                 playerSpacecraft->getRotation(),
-                *textures["greenLaser"],
-                playerSpacecraft.get());
+                *textures["greenLaser"]);
         }
 
         state.currAsteroidNum = 0;

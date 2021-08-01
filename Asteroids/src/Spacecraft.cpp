@@ -104,9 +104,8 @@ void Spacecraft::handleCollisions()
     for (auto &&i : collisions)
     {
         auto elm = i.lock();
-        if (!elm)
+        if (!elm || elm->owner == this->owner)
             continue;
-
         hp--;
     }
 

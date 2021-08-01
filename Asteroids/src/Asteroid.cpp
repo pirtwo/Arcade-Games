@@ -37,9 +37,7 @@ void Asteroid::handleCollisions()
             continue;
 
         if (elm->name == "projectile" || elm->name == "spacecraft")
-        {
             hp--;
-        }
     }
 
     collisions.clear();

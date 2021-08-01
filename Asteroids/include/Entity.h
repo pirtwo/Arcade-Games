@@ -12,8 +12,8 @@ protected:
 
 public:
     int hp;
-    std::string name;
-    Entity *owner;
+    std::string name = "";
+    std::string owner = "";
     std::vector<std::weak_ptr<Entity>> collisions;
 
     virtual ~Entity() {}

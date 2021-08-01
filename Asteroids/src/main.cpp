@@ -253,8 +253,7 @@ int main()
     auto spawnDust =
         [&](
             int num,
-            float x,
-            float y,
+            sf::Vector2f pos,
             float minAngle,
             float maxAngle,
             float minSpeed,
@@ -263,7 +262,7 @@ int main()
             int maxFade)
     {
         auto elm = shared_ptr<Emitter>(new Emitter(
-            x, y, minAngle, maxAngle, minSpeed, maxSpeed, minFade, maxFade));
+            pos.x, pos.y, minAngle, maxAngle, minSpeed, maxSpeed, minFade, maxFade));
         elm->addFuel(num);
         effects.push_back(elm);
     };
@@ -384,6 +383,14 @@ int main()
             auto elm = i->get();
             if (elm->hp == 0)
             {
+                if (elm->name == "asteroid")
+                    state.score += 10;
+
+                if (elm->name == "spacecraft" && elm->owner == "cpu")
+                    state.score += 50;
+
+                spawnDust(5, elm->getPosition(), 0, 360, 1.5, 2, 5, 7);
+
                 i = world.erase(i);
                 if (i == world.end())
                     break;

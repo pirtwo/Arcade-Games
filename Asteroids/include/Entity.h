@@ -11,7 +11,8 @@ protected:
     sf::Sprite _sp;
 
 public:
-    int hp;
+    int hp = 0;
+    int maxHP = 0;
     std::string name = "";
     std::string owner = "";
     std::vector<std::weak_ptr<Entity>> collisions;

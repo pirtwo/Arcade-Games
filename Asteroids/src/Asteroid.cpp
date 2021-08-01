@@ -5,6 +5,7 @@
 Asteroid::Asteroid(sf::Texture &texture, int hp, float speed, float angle)
 {
     this->hp = hp;
+    this->maxHP = hp;
     this->name = "asteroid";
 
     this->speed = speed;

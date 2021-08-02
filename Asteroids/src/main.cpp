@@ -254,7 +254,8 @@ int main()
                 sf::Vector2f(randFloat(0, window.getSize().x), 0), -50, 360, randInt(1, 3));
     };
 
-    auto newgame = [&]()
+    auto newgame =
+        [&]()
     {
         clock.restart();
 
@@ -270,7 +271,8 @@ int main()
         world.push_back(playerSpacecraft);
     };
 
-    auto respawn = [&]()
+    auto respawn =
+        [&]()
     {
         auto spawnArea = findEmptyArea(300, 300);
         playerSpacecraft->hp = 1;

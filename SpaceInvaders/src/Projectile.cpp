@@ -19,7 +19,7 @@ Projectile::~Projectile()
 
 bool Projectile::hasDispose() const
 {
-    //
+    return false;
 }
 
 void Projectile::handleCollisions()
@@ -29,5 +29,5 @@ void Projectile::handleCollisions()
 
 void Projectile::update()
 {
-    move(vel);
+    move(0, vel.y);
 }

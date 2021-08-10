@@ -6,7 +6,6 @@ Alien::Alien(const char *texture, Atlas &atlas)
     this->name = "alien";
     this->owner = "";
     this->hp = 0;
-    this->speed = 0;
 
     _sp = sf::Sprite(atlas.texture);
     _sp.setTextureRect(atlas.data[texture]);
@@ -29,5 +28,5 @@ void Alien::handleCollisions()
 
 void Alien::update()
 {
-    move(0, speed);
+    move(0, vel.y);
 }

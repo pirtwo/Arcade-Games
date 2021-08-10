@@ -8,7 +8,7 @@ class Alien : public Entity
 {
 public:
     int hp;
-    float speed;
+    sf::Vector2f vel;
 
 public:
     Alien(const char *texture, Atlas &atlas);

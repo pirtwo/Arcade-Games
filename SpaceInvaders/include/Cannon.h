@@ -8,6 +8,7 @@ class Cannon : public Entity
 {
 public:
     int hp;
+    float speed;
     sf::Vector2f vel;
 
 public:
@@ -18,6 +19,8 @@ public:
     void moveLeft();
 
     void moveRight();
+
+    void stop();
 
     bool hasDispose() const override;
 

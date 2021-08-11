@@ -8,7 +8,6 @@ class Projectile : public Entity
 {
 public:
     int hp;
-    float range;
     sf::Vector2f vel;
 
 public:

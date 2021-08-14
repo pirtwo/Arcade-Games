@@ -21,12 +21,21 @@ Projectile::~Projectile()
 
 bool Projectile::hasDispose() const
 {
-    return false;
+    return hp == 0;
 }
 
 void Projectile::handleCollisions()
 {
-    //
+    for (auto &&i : collisions)
+    {
+        if (auto elm = i.lock())
+        {
+            if (elm->owner != owner)
+                hp--;
+        }
+    }
+
+    collisions.clear();
 }
 
 void Projectile::update()

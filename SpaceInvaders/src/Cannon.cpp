@@ -37,12 +37,22 @@ void Cannon::stop()
 
 bool Cannon::hasDispose() const
 {
-    return false;
+    return hp == 0;
 }
 
 void Cannon::handleCollisions()
 {
-    //
+    for (auto &&i : collisions)
+    {
+        if (auto elm = i.lock())
+        {
+            if (elm->name == "alien" ||
+                (elm->name == "projectile" && elm->owner != owner))
+                hp--;
+        }
+    }
+
+    collisions.clear();
 }
 
 void Cannon::update()

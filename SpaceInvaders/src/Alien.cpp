@@ -21,12 +21,21 @@ Alien::~Alien()
 
 bool Alien::hasDispose() const
 {
-    return hp < 0;
+    return hp == 0;
 }
 
 void Alien::handleCollisions()
 {
-    //
+    for (auto &&i : collisions)
+    {
+        if (auto elm = i.lock())
+        {
+            if (elm->name == "projectile" && elm->owner != owner)
+                hp--;
+        }
+    }
+
+    collisions.clear();
 }
 
 void Alien::update()

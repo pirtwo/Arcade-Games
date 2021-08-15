@@ -17,6 +17,8 @@ struct State
     int lives = 0;
     int lastAlienSpawnMS = 0;
     int lastCannonFireMS = 0;
+    float alienFireChance = 0.005;
+    bool gameover = true;
 } state;
 
 int main()
@@ -25,14 +27,19 @@ int main()
     window.setFramerateLimit(60);
 
     //====== load assets ======//
+    sf::Font font;
+
     auto atlas = std::make_shared<Atlas>();
     if (!atlas->texture.loadFromFile("./assets/texture.png") ||
-        !loadAtlasData("./assets/texture.data", atlas->data))
+        !loadAtlasData("./assets/texture.data", atlas->data) ||
+        !font.loadFromFile("./assets/Bangers-Regular.ttf"))
     {
         return EXIT_FAILURE;
     }
 
     //====== initialize ======//
+    srand(time(NULL));
+
     sf::Clock clock;
     int elapsedMS = 0;
 
@@ -52,7 +59,22 @@ int main()
     cannon->setPosition(
         window.getSize().x / 2,
         window.getSize().y - 50);
-    world.push_back(cannon);
+
+    char status[100];
+    sf::Text statusText;
+    statusText.setFont(font);
+    statusText.setCharacterSize(25);
+    statusText.setFillColor(sf::Color::White);
+    statusText.setPosition(50, 10);
+
+    sf::Text titleText;
+    titleText.setFont(font);
+    titleText.setCharacterSize(70);
+    titleText.setFillColor(sf::Color::White);
+    titleText.setString("   SPACE\r\nINVADERS");
+    titleText.setPosition(
+        window.getSize().x / 2 - titleText.getLocalBounds().width / 2,
+        window.getSize().y / 2 - titleText.getLocalBounds().height / 2);
 
     auto spawnAlien = [&]()
     {
@@ -99,6 +121,26 @@ int main()
         anims.push_back(elm);
     };
 
+    auto respawn = [&]()
+    {
+        cannon->hp = 1;
+        cannon->setPosition(
+            window.getSize().x / 2,
+            window.getSize().y - 50);
+        world.push_back(cannon);
+    };
+
+    auto newGame = [&]()
+    {
+        state.gameover = false;
+        state.lives = 3;
+        state.score = 0;
+        world.clear();
+        world.push_back(cannon);
+    };
+
+    newGame();
+
     while (window.isOpen())
     {
         sf::Event e;
@@ -134,70 +176,129 @@ int main()
 
         elapsedMS = clock.getElapsedTime().asMilliseconds();
 
-        if (leftArrow.isDown)
-            cannon->moveLeft();
-        if (rightArrow.isDown)
-            cannon->moveRight();
-        if (!leftArrow.isDown && !rightArrow.isDown)
-            cannon->stop();
-
-        if (spacebar.isDown && elapsedMS - state.lastCannonFireMS > 300)
+        if (!state.gameover)
         {
-            spawnProjectile("player", cannon->getPosition());
-            state.lastCannonFireMS = elapsedMS;
-        }
-
-        if (elapsedMS - state.lastAlienSpawnMS > 3000)
-        {
-            spawnAlien();
-            state.lastAlienSpawnMS = elapsedMS;
-        }
-
-        for (auto &&i : world)
-            i->update();
-
-        for (auto &&i : anims)
-            i->update(1000 / 60);
-
-        for (auto &&i : world)
-        {
-            for (auto &&j : world)
-                if (i != j && i->getBounds().intersects(j->getBounds()))
-                    i->collisions.push_back(j);
-        }
-
-        for (auto &&i : world)
-            i->handleCollisions();
-
-        for (auto i = world.begin(); i != world.end(); i++)
-        {
-            if (i->get()->hasDispose() || !bounds.contains(i->get()->getPosition()))
+            if (cannon->hp <= 0)
             {
-                spawnBlast(i->get()->getPosition());
-                i = world.erase(i);
-                if (i == world.end())
-                    break;
+                state.lives--;
+                if (state.lives <= 0)
+                {
+                    state.gameover = true;
+                }
+                else
+                {
+                    respawn();
+                }
             }
-        }
-
-        for (auto i = anims.begin(); i != anims.end(); i++)
-        {
-            if (i->get()->completed())
+            else
             {
-                i = anims.erase(i);
-                if (i == anims.end())
-                    break;
+                if (leftArrow.isDown)
+                    cannon->moveLeft();
+                if (rightArrow.isDown)
+                    cannon->moveRight();
+                if (!leftArrow.isDown && !rightArrow.isDown)
+                    cannon->stop();
+                if (spacebar.isDown && elapsedMS - state.lastCannonFireMS > 300)
+                {
+                    spawnProjectile("player", cannon->getPosition());
+                    state.lastCannonFireMS = elapsedMS;
+                }
             }
-        }
 
+            if (elapsedMS - state.lastAlienSpawnMS > 3000)
+            {
+                spawnAlien();
+                state.lastAlienSpawnMS = elapsedMS;
+            }
+
+            // update entities
+            for (auto &&i : world)
+            {
+                i->update();
+            }
+
+            // update animations
+            for (auto &&i : anims)
+            {
+                i->update(1000 / 60);
+            }
+
+            // alien fire control
+            for (size_t i = 0; i < world.size(); i++)
+            {
+                if (world[i]->name == "alien" &&
+                    randFloat(0, 1) < state.alienFireChance)
+                {
+                    spawnProjectile("cpu", world[i]->getPosition());
+                }
+            }
+
+            // detect collisions
+            for (auto &&i : world)
+            {
+                for (auto &&j : world)
+                    if (i != j && i->getBounds().intersects(j->getBounds()))
+                        i->collisions.push_back(j);
+            }
+
+            // handle collisions
+            for (auto &&i : world)
+            {
+                i->handleCollisions();
+
+                if (i->name == "alien" && i->hasDispose())
+                {
+                    state.score += 10;
+                }
+            }
+
+            // cleanup entities
+            for (auto i = world.begin(); i != world.end(); i++)
+            {
+                if (i->get()->hasDispose() || !bounds.contains(i->get()->getPosition()))
+                {
+                    spawnBlast(i->get()->getPosition());
+                    i = world.erase(i);
+                    if (i == world.end())
+                        break;
+                }
+            }
+
+            // cleanup animations
+            for (auto i = anims.begin(); i != anims.end(); i++)
+            {
+                if (i->get()->completed())
+                {
+                    i = anims.erase(i);
+                    if (i == anims.end())
+                        break;
+                }
+            }
+
+            snprintf(status, 100, "HP: %s%s%s                                             SCORE: %d",
+                     state.lives == 1 ? "|" : "",
+                     state.lives == 2 ? "||" : "",
+                     state.lives == 3 ? "|||" : "",
+                     state.score);
+            statusText.setString(status);
+        }
         //====== draw =======//
         window.clear();
 
-        for (auto &&i : world)
-            window.draw(*i);
+        if (state.gameover)
+        {
+            window.draw(titleText);
+        }
+        else
+        {
+            for (auto &&i : world)
+                window.draw(*i);
 
-        for (auto &&i : anims)
-            window.draw(*i);
+            for (auto &&i : anims)
+                window.draw(*i);
+
+            window.draw(statusText);
+        }
 
         window.display();
     }

@@ -1,4 +1,4 @@
-TARGET  	:= out
+TARGET  	:= Space_Invaders
 SRC_DIR 	:= ./src
 INC_DIR 	:= ./include
 BLD_DIR 	:= ./build
